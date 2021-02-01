@@ -21,8 +21,7 @@ public class Ship : MonoBehaviour
     ShipsGrid shipsGrid;
     Collider gridCollider;
 
-    Camera curCamera;
-    GameObject infoPanel;  
+    Camera playerCamera;     
 
     BoxCollider ownCollider;
     List<Transform> decksList;
@@ -45,10 +44,10 @@ public class Ship : MonoBehaviour
     {         
         shipsGrid = transform.parent.GetComponent<ShipsGrid>();
         gridCollider = shipsGrid.gameObject.GetComponent<Collider>();
-        curCamera = shipsGrid.PlayerCamera();
+        playerCamera = GameObject.Find("MainCamera").GetComponent<Camera>();
 
-        infoPanel = shipsGrid.ControlCanvas().gameObject.transform.Find("InfoPanel").gameObject;
-        infoPanel.SetActive(false);
+        //
+        
 
         ownCollider = GetComponent<BoxCollider>();
         ownCollider.size = new Vector3(deckAmount + 2, 2, 3);
@@ -75,7 +74,7 @@ public class Ship : MonoBehaviour
         defaultRotation = transform.rotation;
         curPosition = defaultPosition;
         curRotation = defaultRotation;
-        zPosition = curCamera.WorldToScreenPoint(transform.position).z;        
+        zPosition = playerCamera.WorldToScreenPoint(transform.position).z;        
     }
     public bool ShipIsInsideGrid()
     {
@@ -105,9 +104,11 @@ public class Ship : MonoBehaviour
     {
         if (isDragging)
         {
-            Vector3 position = new Vector3(Input.mousePosition.x, Input.mousePosition.y, zPosition);
+            shipsGrid.IsDragging = true;
 
-            transform.position = curCamera.ScreenToWorldPoint(position);
+            Vector3 position = new Vector3(Input.mousePosition.x, Input.mousePosition.y, zPosition);           
+
+            transform.position = playerCamera.ScreenToWorldPoint(position);
 
             bool shipIsInsideGrid = ShipIsInsideGrid();
 
@@ -137,10 +138,13 @@ public class Ship : MonoBehaviour
             }
             if (Input.GetKeyDown(KeyCode.Delete))
             {
-                DeleteShip();
-                infoPanel.SetActive(false);
+                DeleteShip();                
             }
 
+        }
+        else
+        {
+            shipsGrid.IsDragging = false;
         }
     }
 
@@ -149,8 +153,7 @@ public class Ship : MonoBehaviour
         if (!isDragging)
         {
             BeginDrag();
-            transform.localScale = new Vector3(1f, 0.4f, 1f);
-            infoPanel.SetActive(true);
+            transform.localScale = new Vector3(1f, 0.4f, 1f);            
         }
     }
 
@@ -158,8 +161,7 @@ public class Ship : MonoBehaviour
     {
         if (isDragging)
         {
-            EndDrag();
-            infoPanel.SetActive(false);;
+            EndDrag();            
         }
     }
 
@@ -199,7 +201,7 @@ public class Ship : MonoBehaviour
             curRotation = transform.rotation;
         }
 
-        shipsGrid.ToggleReadyButton();
+        shipsGrid.SwitchReadyState();
     }
        
     public void DeleteShip()
@@ -218,7 +220,7 @@ public class Ship : MonoBehaviour
         curRotation = transform.rotation;
         transform.localScale = new Vector3(0.5f, 0.2f, 0.5f);
 
-        shipsGrid.ToggleReadyButton();
+        shipsGrid.SwitchReadyState();
     }
     public void DeleteAllShips()
     {

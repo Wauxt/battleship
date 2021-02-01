@@ -691,6 +691,7 @@ GameObject:
   - component: {fileID: 259016572}
   - component: {fileID: 259016571}
   - component: {fileID: 259016570}
+  - component: {fileID: 259016573}
   m_Layer: 0
   m_Name: Player1_Canvas
   m_TagString: Untagged
@@ -781,6 +782,19 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &259016573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 259016568}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6783619af773c0e4c967f54a8fe3254d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grid: {fileID: 650096165}
 --- !u!4 &281037815 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8761221068693063586, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
@@ -998,11 +1012,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 650096165}
+      objectReference: {fileID: 259016573}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AutoPlacement_Random
+      value: P_Random
       objectReference: {fileID: 0}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
@@ -1258,6 +1272,7 @@ GameObject:
   - component: {fileID: 305113487}
   - component: {fileID: 305113486}
   - component: {fileID: 305113485}
+  - component: {fileID: 305113488}
   m_Layer: 0
   m_Name: Player2_Canvas
   m_TagString: Untagged
@@ -1348,6 +1363,19 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &305113488
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 305113483}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6783619af773c0e4c967f54a8fe3254d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  grid: {fileID: 1602943120}
 --- !u!1 &383322628
 GameObject:
   m_ObjectHideFlags: 0
@@ -1846,8 +1874,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97e15994091b2614cbf7b8c2d8b68bcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCamera: {fileID: 963194227}
-  controlCanvas: {fileID: 259016572}
 --- !u!65 &650096166
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2302,11 +2328,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1602943120}
+      objectReference: {fileID: 305113488}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AutoPlacement_Coasts
+      value: P_Coasts
       objectReference: {fileID: 0}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
@@ -2827,11 +2853,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1602943120}
+      objectReference: {fileID: 305113488}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AutoPlacement_AntiDiagonal
+      value: P_Anti_Diagonal
       objectReference: {fileID: 0}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
@@ -4326,11 +4352,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1602943120}
+      objectReference: {fileID: 305113488}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AutoPlacement_Random
+      value: P_Random
       objectReference: {fileID: 0}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
@@ -5070,8 +5096,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 97e15994091b2614cbf7b8c2d8b68bcd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerCamera: {fileID: 963194227}
-  controlCanvas: {fileID: 305113487}
 --- !u!1001 &1617772521
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6506,11 +6530,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 650096165}
+      objectReference: {fileID: 259016573}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AutoPlacement_AntiDiagonal
+      value: P_Anti_Diagonal
       objectReference: {fileID: 0}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
@@ -6791,11 +6815,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 650096165}
+      objectReference: {fileID: 259016573}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: AutoPlacement_Coasts
+      value: P_Coasts
       objectReference: {fileID: 0}
     - target: {fileID: 8039563415242006076, guid: 378b705ab75060049872ffbd63118b6e,
         type: 3}
@@ -7635,7 +7659,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1602943120}
+      - m_Target: {fileID: 305113488}
         m_MethodName: ToggleAutoPlacementPanel
         m_Mode: 1
         m_Arguments:
@@ -8701,7 +8725,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 650096165}
+      - m_Target: {fileID: 259016573}
         m_MethodName: ToggleAutoPlacementPanel
         m_Mode: 1
         m_Arguments:

@@ -6,19 +6,30 @@ using UnityEngine.UI;
 
 public class ShipsGrid : MonoBehaviour
 {
-    [SerializeField] private Camera playerCamera = null;
-    [SerializeField] private Canvas controlCanvas = null;
+    
 
-    private Button startButton;    
-    private GameObject autoPlacementPanel;
+    ////
+    //[SerializeField] private Canvas controlCanvas = null;
+
+    //private Button startButton;    
+    //private GameObject autoPlacementPanel;
+    ////
+
     private List<BoxCollider> shipsColliders;
-
+    
+    
     int[,] gridCells;
-        
+    bool isReadyToStart;
+    bool isDragging;
 
-    public Camera PlayerCamera() { return playerCamera; }
-    public Canvas ControlCanvas() { return controlCanvas; }
+    ////
+    
+    //public Canvas ControlCanvas() { return controlCanvas; }
+    ////
     public List<BoxCollider> ShipsColliders() { return shipsColliders; }
+    public bool IsReadyToStart { get { return isReadyToStart; } }
+    public bool IsDragging { get { return isDragging; } set { isDragging = value; } }
+
     
     public int[,] GetGridCells()
     {
@@ -29,14 +40,15 @@ public class ShipsGrid : MonoBehaviour
 
     void Awake()
     {
-        autoPlacementPanel = controlCanvas.gameObject.transform.Find("Panel").Find("AutoPlacementPanel").gameObject;
-        autoPlacementPanel.SetActive(false);
+        ////
+        //autoPlacementPanel = controlCanvas.gameObject.transform.Find("Panel").Find("AutoPlacementPanel").gameObject;
+        //autoPlacementPanel.SetActive(false);
 
-        startButton = controlCanvas.gameObject.transform.Find("Panel").Find("Start").gameObject.GetComponent<Button>();
-
-        gridCells = new int[10, 10];
-
+        //startButton = controlCanvas.gameObject.transform.Find("Panel").Find("Start").gameObject.GetComponent<Button>();
+        ////
         shipsColliders = new List<BoxCollider>();
+        gridCells = new int[10, 10];
+        isReadyToStart = false;        
 
         for (int i = 0; i < transform.childCount; i++)
         {
@@ -44,13 +56,13 @@ public class ShipsGrid : MonoBehaviour
         }
     }
 
-    public void ToggleAutoPlacementPanel()
-    { 
-        if (!autoPlacementPanel.activeSelf)        
-            autoPlacementPanel.SetActive(true);        
-        else        
-            autoPlacementPanel.SetActive(false);        
-    }
+    //public void ToggleAutoPlacementPanel()
+    //{ 
+    //    if (!autoPlacementPanel.activeSelf)        
+    //        autoPlacementPanel.SetActive(true);        
+    //    else        
+    //        autoPlacementPanel.SetActive(false);        
+    //}
 
     public bool AllShipsAreInsideGrid()
     {
@@ -65,19 +77,7 @@ public class ShipsGrid : MonoBehaviour
         return true;
     }
 
-    public void ToggleReadyButton()
-    {
-        if (!AllShipsAreInsideGrid())
-        {
-            startButton.interactable = false;
-            startButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "<color=grey>Начать игру</color>";
-        }
-        else
-        {
-            startButton.interactable = true;
-            startButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "<color=white>Начать игру</color>";
-        }
-    }
+    public void SwitchReadyState() => isReadyToStart = AllShipsAreInsideGrid() ? true : false;    
 
     public void EndPlacement()
     {
@@ -116,9 +116,6 @@ public class ShipsGrid : MonoBehaviour
             shipsColliders[i].enabled = true;
         }
 
-
-
-
     }
 
     public void AutoPlacement_Random()
@@ -139,7 +136,7 @@ public class ShipsGrid : MonoBehaviour
             SetRandomPosition(i);
         }
 
-        ToggleReadyButton();
+        SwitchReadyState();
     }
 
     public void AutoPlacement_AntiDiagonal()
@@ -164,7 +161,7 @@ public class ShipsGrid : MonoBehaviour
             SetRandomPosition(i);
         }
 
-        ToggleReadyButton();
+        SwitchReadyState();
     }
 
     public void AutoPlacement_Coasts()
@@ -210,7 +207,7 @@ public class ShipsGrid : MonoBehaviour
                 SetRandomPosition(i);
         }
 
-        ToggleReadyButton();
+        SwitchReadyState();
     }
     void SetRandomPosition(int i)
     {
