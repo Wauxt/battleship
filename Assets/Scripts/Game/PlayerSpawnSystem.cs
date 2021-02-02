@@ -43,18 +43,16 @@ public class PlayerSpawnSystem : NetworkBehaviour
         spawnPoints.Remove(transform);
     }
 
-    public override void OnStartServer()
-    {
-        NetworkManagerBS.OnServerReadied += SpawnPlayer;
-    }
+    public override void OnStartServer() => Room.OnServerReadied += SpawnPlayer;
+    
 
     [ServerCallback]
-    private void OnDestroy() => NetworkManagerBS.OnServerReadied -= SpawnPlayer;
+    private void OnDestroy() => Room.OnServerReadied -= SpawnPlayer;
 
     public override void OnStopServer()
     {
         spawnPoints = null;
-        NetworkManagerBS.OnServerReadied -= SpawnPlayer;
+        Room.OnServerReadied -= SpawnPlayer;
         NetworkServer.Destroy(gameObject);
     }
 

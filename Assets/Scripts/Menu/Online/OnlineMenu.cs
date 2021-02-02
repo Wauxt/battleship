@@ -40,9 +40,9 @@ public class OnlineMenu : MonoBehaviour
 
     private void OnEnable()
     {
-        NetworkManagerBS.OnClientConnected += HandleClientConnected;
-        NetworkManagerBS.OnClientDisconnected += HandleClientDisconnected;
-        NetworkManagerBS.OnClientHostedTheServer += HandleClientHostedServer;        
+        Room.OnClientConnected += HandleClientConnected;
+        Room.OnClientDisconnected += HandleClientDisconnected;
+        Room.OnClientHostedTheServer += HandleClientHostedServer;        
 
         errorInfoText.text = "";
 

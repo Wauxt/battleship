@@ -19,13 +19,13 @@ public class NetworkManagerBS : NetworkManager
     private int minPlayers = 2;
 
 
-    public static event Action OnClientConnected;
-    public static event Action OnClientDisconnected;
-    public static event Action OnClientHostedTheServer;
+    public event Action OnClientConnected;
+    public event Action OnClientDisconnected;
+    public event Action OnClientHostedTheServer;
     
     //public static event Action OnIngameDisconnect;
 
-    public static event Action<NetworkConnection> OnServerReadied;
+    public event Action<NetworkConnection> OnServerReadied;
 
     public List<NetworkRoomPlayer> RoomPlayers { get; } = new List<NetworkRoomPlayer>();
     public List<NetworkGamePlayer> GamePlayers { get; } = new List<NetworkGamePlayer>();
