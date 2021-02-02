@@ -791,8 +791,6 @@ MonoBehaviour:
     type: 3}
   playerSpawnSystem: {fileID: 4203174921405390314, guid: 29a609117674dfc4298bc16a811959d2,
     type: 3}
-  player1_canvas: {fileID: 0}
-  player2_canvas: {fileID: 0}
 --- !u!4 &123743336
 Transform:
   m_ObjectHideFlags: 0

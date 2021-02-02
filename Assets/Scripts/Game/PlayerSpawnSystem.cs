@@ -29,7 +29,7 @@ public class PlayerSpawnSystem : NetworkBehaviour
 
     public static void AddSpawnPoint(Transform transform)
     {
-        if (spawnPoints == null) 
+        if (spawnPoints == null)
         {
             spawnPoints = new List<Transform>();
             Debug.Log("awefawefawefaewfauehfjaoweifjaopwejfapowejfopawejfpoawjefopajwepofajwepofjapoweijfapoweijfpaoiwejfopaiewjfpoaiwjefpoajweopif");
@@ -43,9 +43,9 @@ public class PlayerSpawnSystem : NetworkBehaviour
         spawnPoints.Remove(transform);
     }
 
-    public override void OnStartServer() 
-    {        
-        NetworkManagerBS.OnServerReadied += SpawnPlayer; 
+    public override void OnStartServer()
+    {
+        NetworkManagerBS.OnServerReadied += SpawnPlayer;
     }
 
     [ServerCallback]
@@ -54,12 +54,9 @@ public class PlayerSpawnSystem : NetworkBehaviour
     public override void OnStopServer()
     {
         spawnPoints = null;
-        NetworkManagerBS.OnServerReadied -= SpawnPlayer;        
+        NetworkManagerBS.OnServerReadied -= SpawnPlayer;
         NetworkServer.Destroy(gameObject);
     }
-
-    //public override void OnStartClient() => SpawnPlayer(connectionToClient);
-    // bullshit
 
     [Server]
     public void SpawnPlayer(NetworkConnection conn)

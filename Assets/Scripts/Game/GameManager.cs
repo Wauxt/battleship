@@ -22,5 +22,6 @@ public class GameManager : MonoBehaviour
     {
         Room.IngameDisconnect();
         SceneManager.LoadScene("Menu");
-    }    
+    } 
+
 }

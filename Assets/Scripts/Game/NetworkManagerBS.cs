@@ -9,8 +9,6 @@ using Mirror;
 
 public class NetworkManagerBS : NetworkManager
 {
-    [SerializeField] private int minPlayers = 2;
-
     [Header("Room")]
     [SerializeField] private NetworkRoomPlayer roomPlayerPrefab = null;
 
@@ -18,16 +16,14 @@ public class NetworkManagerBS : NetworkManager
     [SerializeField] private NetworkGamePlayer gamePlayerPrefab = null;
     [SerializeField] private GameObject playerSpawnSystem = null;
 
-    //[Header("UI")]
-    //[SerializeField] private GameObject player1_canvas = null;
-    //[SerializeField] private GameObject player2_canvas = null;
+    private int minPlayers = 2;
 
 
     public static event Action OnClientConnected;
     public static event Action OnClientDisconnected;
     public static event Action OnClientHostedTheServer;
-
-    public static event Action OnIngameDisconnect;
+    
+    //public static event Action OnIngameDisconnect;
 
     public static event Action<NetworkConnection> OnServerReadied;
 
@@ -158,7 +154,7 @@ public class NetworkManagerBS : NetworkManager
     {
         if (sceneName == "Game_PVP")
         {
-            GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
+            GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);            
             NetworkServer.Spawn(playerSpawnSystemInstance);            
         }
     }
@@ -180,6 +176,6 @@ public class NetworkManagerBS : NetworkManager
     {
         base.OnServerReady(conn);
         OnServerReadied?.Invoke(conn);
-
     }
+
 }
