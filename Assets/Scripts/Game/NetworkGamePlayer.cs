@@ -9,9 +9,7 @@ using Mirror;
 using TMPro;
 
 public class NetworkGamePlayer : NetworkBehaviour
-{
-    
-
+{ 
     [SyncVar]
     public string displayName = "Загрузка...";
 
@@ -34,31 +32,12 @@ public class NetworkGamePlayer : NetworkBehaviour
     public override void OnStartClient()
     {
         DontDestroyOnLoad(gameObject);
-        Room.GamePlayers.Add(this);
-        NetworkManagerBS.OnIngameDisconnect += IngameDisconnect;
-        playerNumber = Room.GamePlayers.Count == 1 ? 1 : Room.GamePlayers.Count == 2 ? 2 : 0;
-        
-    }
-    public void IngameDisconnect()
-    {        
-        if (isServer)
-        {
-            Room.StopHost();
-        }
-        else
-        {
-            Room.StopClient();
-        }
-        SceneManager.LoadScene("Menu");
+        Room.GamePlayers.Add(this);        
+        playerNumber = Room.GamePlayers.Count == 1 ? 1 : Room.GamePlayers.Count == 2 ? 2 : 0;        
     }
 
-    public override void OnStopClient()
-    {
-        Room.GamePlayers.Remove(this); 
-        // clear() or remove(this) ????      
-    }
-
-
+    public override void OnStopClient() => Room.GamePlayers.Remove(this);  // clear() or remove(this) ????      
+    
     [Server]
     public void SetDisplayName(string name)
     {

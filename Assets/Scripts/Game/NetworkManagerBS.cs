@@ -18,9 +18,9 @@ public class NetworkManagerBS : NetworkManager
     [SerializeField] private NetworkGamePlayer gamePlayerPrefab = null;
     [SerializeField] private GameObject playerSpawnSystem = null;
 
-    [Header("UI")]
-    [SerializeField] private GameObject player1_canvas = null;
-    [SerializeField] private GameObject player2_canvas = null;
+    //[Header("UI")]
+    //[SerializeField] private GameObject player1_canvas = null;
+    //[SerializeField] private GameObject player2_canvas = null;
 
 
     public static event Action OnClientConnected;
@@ -159,19 +159,22 @@ public class NetworkManagerBS : NetworkManager
         if (sceneName == "Game_PVP")
         {
             GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
-            NetworkServer.Spawn(playerSpawnSystemInstance);
-
-            player1_canvas = GameObject.Find("Player1_Canvas");
-            player2_canvas = GameObject.Find("Player2_Canvas");
-
-            //player1_canvas.transform.Find("Panel").Find("Exit").GetComponent<Button>().onClick.AddListener(() => StopHost());
-            //player2_canvas.transform.Find("Panel").Find("Exit").GetComponent<Button>().onClick.AddListener(() => StopClient());
-            player1_canvas.transform.Find("Panel").Find("Exit").GetComponent<Button>().onClick.AddListener(() => IngameDisconnect());
-            player2_canvas.transform.Find("Panel").Find("Exit").GetComponent<Button>().onClick.AddListener(() => IngameDisconnect());
+            NetworkServer.Spawn(playerSpawnSystemInstance);            
         }
     }
 
-    public void IngameDisconnect() => OnIngameDisconnect?.Invoke();
+    public void IngameDisconnect()
+    {
+        if (mode == NetworkManagerMode.ClientOnly)
+        {
+            StopClient();
+        }
+        else if(mode == NetworkManagerMode.Host)
+        {
+            StopHost();
+        }
+        Destroy(gameObject);
+    }
 
     public override void OnServerReady(NetworkConnection conn)
     {

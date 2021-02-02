@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine;
 using Mirror;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 
 public class OnlineMenu : MonoBehaviour
@@ -142,26 +143,32 @@ public class OnlineMenu : MonoBehaviour
 
     private void HandleClientConnected()
     {
-        lastTimeTriedToConnect = 0f;
-        
-        joinButton.interactable = true;
-        discButton.interactable = true;
-        backToMenuButton.interactable = false;
+        if (SceneManager.GetActiveScene().name == "Menu")
+        {
+            lastTimeTriedToConnect = 0f;
+
+            joinButton.interactable = true;
+            discButton.interactable = true;
+            backToMenuButton.interactable = false;
+        }
     }
     private void HandleClientDisconnected()
     {
-        TimeOutCheck();
+        if (SceneManager.GetActiveScene().name == "Menu")
+        {
+            TimeOutCheck();
 
-        hostButton.interactable = true;
-        joinButton.interactable = true;
-        discButton.interactable = true;
+            hostButton.interactable = true;
+            joinButton.interactable = true;
+            discButton.interactable = true;
 
-        backToMenuButton.interactable = true;
+            backToMenuButton.interactable = true;
 
-        joinButton.gameObject.SetActive(true);
-        discButton.gameObject.SetActive(false);
-        hostButton.gameObject.SetActive(true);
-        closeHostButton.gameObject.SetActive(false);
+            joinButton.gameObject.SetActive(true);
+            discButton.gameObject.SetActive(false);
+            hostButton.gameObject.SetActive(true);
+            closeHostButton.gameObject.SetActive(false);
+        }
     }
 
     bool IsIPAddress(string ipAddress)

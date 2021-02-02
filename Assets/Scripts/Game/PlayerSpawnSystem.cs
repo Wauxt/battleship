@@ -9,12 +9,32 @@ public class PlayerSpawnSystem : NetworkBehaviour
 {
     [SerializeField] private GameObject playerPrefab = null;
 
-    private static List<Transform> spawnPoints = new List<Transform>();
+    private static List<Transform> spawnPoints = null;
 
     private int nextIndex = 0;
 
+    private NetworkManagerBS room;
+
+    private NetworkManagerBS Room
+    {
+        get
+        {
+            if (room != null)
+            {
+                return room;
+            }
+            return room = NetworkManager.singleton as NetworkManagerBS;
+        }
+    }
+
     public static void AddSpawnPoint(Transform transform)
     {
+        if (spawnPoints == null) 
+        {
+            spawnPoints = new List<Transform>();
+            Debug.Log("awefawefawefaewfauehfjaoweifjaopwejfapowejfopawejfpoawjefopajwepofajwepofjapoweijfapoweijfpaoiwejfopaiewjfpoaiwjefpoajweopif");
+        }
+
         spawnPoints.Add(transform);
         spawnPoints = spawnPoints.OrderBy(x => x.GetSiblingIndex()).ToList();
     }
@@ -23,17 +43,23 @@ public class PlayerSpawnSystem : NetworkBehaviour
         spawnPoints.Remove(transform);
     }
 
-    public override void OnStartServer() => NetworkManagerBS.OnServerReadied += SpawnPlayer;
+    public override void OnStartServer() 
+    {        
+        NetworkManagerBS.OnServerReadied += SpawnPlayer; 
+    }
 
-    //[ServerCallback]
-    //private void OnDestroy() => NetworkManagerBS.OnServerReadied -= SpawnPlayer;
+    [ServerCallback]
+    private void OnDestroy() => NetworkManagerBS.OnServerReadied -= SpawnPlayer;
 
     public override void OnStopServer()
     {
-        NetworkManagerBS.OnServerReadied -= SpawnPlayer;
+        spawnPoints = null;
+        NetworkManagerBS.OnServerReadied -= SpawnPlayer;        
         NetworkServer.Destroy(gameObject);
     }
 
+    //public override void OnStartClient() => SpawnPlayer(connectionToClient);
+    // bullshit
 
     [Server]
     public void SpawnPlayer(NetworkConnection conn)
