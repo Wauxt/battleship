@@ -18,27 +18,26 @@ public class NetworkManagerBS : NetworkManager
 
     private int minPlayers = 2;
 
-
-    public event Action OnClientConnected;
-    public event Action OnClientDisconnected;
+    // --------------- LOBBY ----------------
+    public event Action OnClientConnectedToLobby;
+    public event Action OnClientDisconnectedFromLobby;
     public event Action OnClientHostedTheServer;
-    
-    //public static event Action OnIngameDisconnect;
+    //
 
+    // --------------- GAME ----------------
+    public event Action OnServerWhenClientDisconnectedIngame;
     public event Action<NetworkConnection> OnServerReadied;
 
     public List<NetworkRoomPlayer> RoomPlayers { get; } = new List<NetworkRoomPlayer>();
     public List<NetworkGamePlayer> GamePlayers { get; } = new List<NetworkGamePlayer>();
 
 
-    public override void OnStartServer()
+    public override void OnStartServer()                                // Initialization
     {
         spawnPrefabs.Clear();
         spawnPrefabs = Resources.LoadAll<GameObject>("NetworkIdentified").ToList();
     }
-    public override void OnStopServer() => RoomPlayers.Clear();
-
-    public override void OnStartClient()
+    public override void OnStartClient()                                // Initialization
     {
         spawnPrefabs.Clear();
         spawnPrefabs = Resources.LoadAll<GameObject>("NetworkIdentified").ToList();
@@ -48,7 +47,20 @@ public class NetworkManagerBS : NetworkManager
         }
     }
 
-    public override void OnClientConnect(NetworkConnection conn)
+
+    public override void OnStopServer()                                 // ---------- LOBBY (i guess) -----------
+    {
+        RoomPlayers.Clear();
+    }
+    public override void OnServerConnect(NetworkConnection conn)        // -------- Both LOBBY and GAME --------- (wont let connect more than two players)
+    {
+        if (numPlayers >= maxConnections)
+        {
+            conn.Disconnect();
+            return;
+        }
+    }
+    public override void OnClientConnect(NetworkConnection conn)        // --------------- LOBBY ---------------- (online menu's UI manipulation: buttons, inputfield, etc.)
     {
         base.OnClientConnect(conn);
         if (numPlayers <= 1)
@@ -57,46 +69,68 @@ public class NetworkManagerBS : NetworkManager
         }
         else
         {
-            OnClientConnected?.Invoke();
+            OnClientConnectedToLobby?.Invoke();
         }
     }
-
-    public override void OnClientDisconnect(NetworkConnection conn)
+    public override void OnClientDisconnect(NetworkConnection conn)     // -------- Both LOBBY and GAME --------- (invoking some functions)
     {
         base.OnClientDisconnect(conn);
-        OnClientDisconnected?.Invoke();
-    }
+        string currentSceneName = SceneManager.GetActiveScene().name;
 
-    public override void OnServerConnect(NetworkConnection conn)
-    {
-        if (numPlayers >= maxConnections)
+        switch (currentSceneName)
         {
-            conn.Disconnect();
-            return;
+            case "Menu":
+                {
+                    OnClientDisconnectedFromLobby?.Invoke();
+                    break;
+                }
+            case "Game_PVP":
+                {
+                    //OnServerWhenClientDisconnectedIngame?.Invoke();
+                    //Destroy(gameObject);
+                    break;
+                }
         }
     }
-    public override void OnServerDisconnect(NetworkConnection conn)
+    public override void OnServerDisconnect(NetworkConnection conn)     // -------- Both LOBBY and GAME --------- (invoking some functions)
     {
-        if (conn.identity != null)
-        {
-            var player = conn.identity.GetComponent<NetworkRoomPlayer>();
-            RoomPlayers.Remove(player);
+        string currentSceneName = SceneManager.GetActiveScene().name;
 
-            NotifyPlayersOfReadyState();
+        switch (currentSceneName)
+        {
+            case "Menu":
+                {
+                    if (conn.identity != null)
+                    {
+                        var player = conn.identity.GetComponent<NetworkRoomPlayer>();
+                        RoomPlayers.Remove(player);
+
+                        NotifyPlayersOfReadyState();
+                    }
+
+                    base.OnServerDisconnect(conn);
+
+                    break;
+                }
+            case "Game_PVP":
+                {
+                    OnServerWhenClientDisconnectedIngame?.Invoke(); // RpcClient function invoking (from spawn system)
+
+                    base.OnServerDisconnect(conn);
+
+                    break;
+                }
         }
 
-        base.OnServerDisconnect(conn);
     }
-
-    public void NotifyPlayersOfReadyState()
+    public void NotifyPlayersOfReadyState()                             // --------------- LOBBY ---------------- 
     {
         foreach (var player in RoomPlayers)
         {
             player.HandleReadyToStart(IsReadyToStart());
         }
     }
-
-    private bool IsReadyToStart()
+    private bool IsReadyToStart()                                       // --------------- LOBBY ---------------- 
     {
         if (numPlayers < minPlayers)
         {
@@ -111,8 +145,7 @@ public class NetworkManagerBS : NetworkManager
         }
         return true;
     }
-
-    public override void OnServerAddPlayer(NetworkConnection conn)
+    public override void OnServerAddPlayer(NetworkConnection conn)      // --------------- LOBBY ----------------
     {
         bool isLeader = RoomPlayers.Count == 0;
 
@@ -120,8 +153,7 @@ public class NetworkManagerBS : NetworkManager
         roomPlayerInstance.IsLeader = isLeader;
         NetworkServer.AddPlayerForConnection(conn, roomPlayerInstance.gameObject);
     }
-
-    public void StartGame()
+    public void StartGame()                                             // --------------- LOBBY ----------------
     {
         if (SceneManager.GetActiveScene().name == "Menu")
         {
@@ -131,7 +163,7 @@ public class NetworkManagerBS : NetworkManager
         }
     }
 
-    public override void ServerChangeScene(string newSceneName)
+    public override void ServerChangeScene(string newSceneName)         // --------------- LOBBY ----------------
     {
         //yet only from menu to game
         if (SceneManager.GetActiveScene().name == "Menu" && newSceneName == "Game_PVP")
@@ -150,32 +182,35 @@ public class NetworkManagerBS : NetworkManager
         base.ServerChangeScene(newSceneName);
     }
 
-    public override void OnServerSceneChanged(string sceneName)
+    public override void OnServerSceneChanged(string sceneName)         // --------------- GAME -----------------
     {
         if (sceneName == "Game_PVP")
         {
-            GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);            
-            NetworkServer.Spawn(playerSpawnSystemInstance);            
+            GameObject playerSpawnSystemInstance = Instantiate(playerSpawnSystem);
+            NetworkServer.Spawn(playerSpawnSystemInstance);
         }
     }
 
-    public void IngameDisconnect()
-    {
-        if (mode == NetworkManagerMode.ClientOnly)
-        {
-            StopClient();
-        }
-        else if(mode == NetworkManagerMode.Host)
-        {
-            StopHost();
-        }
-        Destroy(gameObject);
-    }
-
-    public override void OnServerReady(NetworkConnection conn)
+    public override void OnServerReady(NetworkConnection conn)          // --------------- GAME ----------------- (SpawnPlayer function invoking)
     {
         base.OnServerReady(conn);
         OnServerReadied?.Invoke(conn);
+    }
+    public void IngameDisconnect()                                      // --------------- GAME -----------------
+    {
+
+        if (mode == NetworkManagerMode.Host)
+        {
+            StopHost();
+            Debug.Log("Stopping the host...");
+        }
+        else if (mode == NetworkManagerMode.ClientOnly)
+        {
+            StopClient();
+            Debug.Log("Disconnecting...");
+        }        
+        SceneManager.LoadScene("Menu");
+        Destroy(gameObject);
     }
 
 }

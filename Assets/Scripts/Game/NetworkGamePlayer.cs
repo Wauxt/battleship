@@ -36,8 +36,16 @@ public class NetworkGamePlayer : NetworkBehaviour
         playerNumber = Room.GamePlayers.Count == 1 ? 1 : Room.GamePlayers.Count == 2 ? 2 : 0;        
     }
 
-    public override void OnStopClient() => Room.GamePlayers.Remove(this);   
-    
+    public override void OnStopClient() 
+    {
+        Room.GamePlayers.Remove(this);                
+    }
+
+    public override void OnStopServer()
+    {
+        base.OnStopServer();
+    }
+
     [Server]
     public void SetDisplayName(string name)
     {

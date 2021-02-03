@@ -31,23 +31,33 @@ public class PlayerSpawnSystem : NetworkBehaviour
     {
         if (spawnPoints == null)
         {
-            spawnPoints = new List<Transform>();
-            Debug.Log("awefawefawefaewfauehfjaoweifjaopwejfapowejfopawejfpoawjefopajwepofajwepofjapoweijfapoweijfpaoiwejfopaiewjfpoaiwjefpoajweopif");
+            spawnPoints = new List<Transform>();            
         }
 
         spawnPoints.Add(transform);
-        spawnPoints = spawnPoints.OrderBy(x => x.GetSiblingIndex()).ToList();
+        spawnPoints = spawnPoints.OrderBy(x => x.gameObject.name).ToList();
     }
     public static void RemoveSpawnPoint(Transform transform)
     {
         spawnPoints.Remove(transform);
     }
 
-    public override void OnStartServer() => Room.OnServerReadied += SpawnPlayer;
-    
+    public override void OnStartServer() 
+    {
+        Room.OnServerReadied += SpawnPlayer;
+        Room.OnServerWhenClientDisconnectedIngame += RpcDisconnect;
+    }
+
+    [ClientRpc]
+    private void RpcDisconnect() => Room.IngameDisconnect();
+
 
     [ServerCallback]
-    private void OnDestroy() => Room.OnServerReadied -= SpawnPlayer;
+    private void OnDestroy() 
+    { 
+        Room.OnServerReadied -= SpawnPlayer;
+        Room.OnServerWhenClientDisconnectedIngame -= RpcDisconnect;
+    }
 
     public override void OnStopServer()
     {

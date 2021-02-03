@@ -18,10 +18,5 @@ public class GameManager : MonoBehaviour
             return room = NetworkManager.singleton as NetworkManagerBS;
         }
     }
-    public void GoBackToMainMenu()
-    {
-        Room.IngameDisconnect();
-        SceneManager.LoadScene("Menu");
-    } 
-
+    public void GoBackToMainMenu() => Room.IngameDisconnect();
 }
