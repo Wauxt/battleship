@@ -8,9 +8,9 @@ public class ControlCanvas : MonoBehaviour
 {
     [SerializeField] private ShipsGrid grid = null;
 
-    private Button startButton;
-    private GameObject autoPlacementPanel;
-    private GameObject infoPanel;
+    private Button startButton = null;
+    private GameObject autoPlacementPanel = null;
+    private GameObject infoPanel = null;
 
     void Awake()
     {
@@ -31,9 +31,9 @@ public class ControlCanvas : MonoBehaviour
             autoPlacementPanel.SetActive(false);
     }
 
-    public void ToggleReadyButton()
+    public void ToggleReadyButton(bool isReady)
     {
-        if (!grid.IsReadyToStart)
+        if (!isReady)
         {
             startButton.interactable = false;
             startButton.transform.GetChild(0).GetComponent<TMP_Text>().text = "<color=grey>Начать игру</color>";
@@ -45,29 +45,14 @@ public class ControlCanvas : MonoBehaviour
         }
     }
 
-    public void P_Random()
-    {
-        grid.AutoPlacement_Random();
-        ToggleReadyButton();
-    }
-
-    public void P_Anti_Diagonal()
-    {
-        grid.AutoPlacement_AntiDiagonal();
-        ToggleReadyButton();
-    }
-
-    public void P_Coasts()
-    {
-        grid.AutoPlacement_Coasts();
-        ToggleReadyButton();        
-    }
+    public void P_Random() => grid.AutoPlacement_Random();   
+    public void P_Anti_Diagonal() => grid.AutoPlacement_AntiDiagonal();
+    public void P_Coasts() => grid.AutoPlacement_Coasts();
+    
 
     void Update()
     {
-        if (!grid.IsDragging)
-            infoPanel.SetActive(false);
-        else
-            infoPanel.SetActive(true);
+        infoPanel.SetActive(grid.IsDragging);
+        ToggleReadyButton(grid.IsReadyToStart);
     }
 }

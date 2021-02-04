@@ -73,10 +73,7 @@ public class PlayerSpawnSystem : NetworkBehaviour
         {
             Transform spawnPoint = spawnPoints.ElementAtOrDefault(nextIndex);
 
-            //if (spawnPoint == null) {Debug.LogError($"nospawnpoint"); return; }
-
-            GameObject playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);
-            playerInstance.name = nextIndex == 0 ? "_Player1_" : "_Player2_";
+            GameObject playerInstance = Instantiate(playerPrefab, spawnPoints[nextIndex].position, spawnPoints[nextIndex].rotation);            
             NetworkServer.Spawn(playerInstance, conn);
 
             nextIndex++;

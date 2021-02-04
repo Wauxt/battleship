@@ -34,8 +34,7 @@ public class Ship : MonoBehaviour
 
     #endregion
 
-    [SerializeField]
-    public int deckAmount;
+    [SerializeField] public int deckAmount;
 
     public Vector3 CurPosition { get { return curPosition; } set { curPosition = value; } }
     public Quaternion CurRotation { get { return curRotation; } set { curRotation = value; } }
@@ -46,8 +45,6 @@ public class Ship : MonoBehaviour
         gridCollider = shipsGrid.gameObject.GetComponent<Collider>();
         playerCamera = GameObject.Find("MainCamera").GetComponent<Camera>();
 
-        //
-        
 
         ownCollider = GetComponent<BoxCollider>();
         ownCollider.size = new Vector3(deckAmount + 2, 2, 3);
@@ -140,12 +137,7 @@ public class Ship : MonoBehaviour
             {
                 DeleteShip();                
             }
-
-        }
-        else
-        {
-            shipsGrid.IsDragging = false;
-        }
+        }        
     }
 
     void OnMouseDown()
@@ -173,6 +165,7 @@ public class Ship : MonoBehaviour
     public void EndDrag()
     {
         isDragging = false;
+        shipsGrid.IsDragging = false;
         
         bool overlapsAnyOtherShip = false;
 
@@ -207,6 +200,7 @@ public class Ship : MonoBehaviour
     public void DeleteShip()
     {
         isDragging = false;
+        shipsGrid.IsDragging = false;
 
         for (int i = 0; i < transform.childCount; i++)
         {

@@ -6,46 +6,26 @@ using UnityEngine.UI;
 
 public class ShipsGrid : MonoBehaviour
 {
-    
-
-    ////
-    //[SerializeField] private Canvas controlCanvas = null;
-
-    //private Button startButton;    
-    //private GameObject autoPlacementPanel;
-    ////
-
     private List<BoxCollider> shipsColliders;
-    
-    
+        
     int[,] gridCells;
+
     bool isReadyToStart;
     bool isDragging;
-
-    ////
-    
-    //public Canvas ControlCanvas() { return controlCanvas; }
-    ////
+        
     public List<BoxCollider> ShipsColliders() { return shipsColliders; }
     public bool IsReadyToStart { get { return isReadyToStart; } }
     public bool IsDragging { get { return isDragging; } set { isDragging = value; } }
-
-    
+        
     public int[,] GetGridCells()
     {
         int[,] result = new int[10, 10];
         return result;
     }
     
-
     void Awake()
     {
-        ////
-        //autoPlacementPanel = controlCanvas.gameObject.transform.Find("Panel").Find("AutoPlacementPanel").gameObject;
-        //autoPlacementPanel.SetActive(false);
-
-        //startButton = controlCanvas.gameObject.transform.Find("Panel").Find("Start").gameObject.GetComponent<Button>();
-        ////
+        
         shipsColliders = new List<BoxCollider>();
         gridCells = new int[10, 10];
         isReadyToStart = false;        
@@ -55,14 +35,6 @@ public class ShipsGrid : MonoBehaviour
             shipsColliders.Add(transform.GetChild(i).GetComponent<BoxCollider>());
         }
     }
-
-    //public void ToggleAutoPlacementPanel()
-    //{ 
-    //    if (!autoPlacementPanel.activeSelf)        
-    //        autoPlacementPanel.SetActive(true);        
-    //    else        
-    //        autoPlacementPanel.SetActive(false);        
-    //}
 
     public bool AllShipsAreInsideGrid()
     {
@@ -82,14 +54,12 @@ public class ShipsGrid : MonoBehaviour
     public void EndPlacement()
     {
         // have to check and send current placement
-        
-        
+                
         gameObject.GetComponent<BoxCollider>().enabled = false;
         for (int i = 0; i < shipsColliders.Count; i++)
         {
             shipsColliders[i].enabled = false;
         }
-
         
         for (int i = 0; i < 10; i++)
         {
@@ -104,18 +74,33 @@ public class ShipsGrid : MonoBehaviour
                 if (Physics.CheckSphere(pos , 1f))
                 {
                     gridCells[i, j] = 1;
-                    Debug.Log("a deck!");
+                    //Debug.Log("a deck!");
                 }
-
             }
         }
 
         gameObject.GetComponent<BoxCollider>().enabled = true;
-        for (int i = 0; i < shipsColliders.Count; i++)
-        {
-            shipsColliders[i].enabled = true;
-        }
 
+        List<Transform> decks = new List<Transform>();
+
+        shipsColliders.Clear();
+
+        foreach (Transform ship in transform)
+        {
+            foreach (Transform deck in ship)
+            {
+                decks.Add(deck);
+            }
+        }
+        foreach (Transform deck in decks)
+        {
+            deck.SetParent(gameObject.transform);
+        }
+        foreach (Transform ship in transform)
+        {
+            if (ship.gameObject.TryGetComponent(out Ship rofl))
+                Destroy(ship.gameObject);
+        }
     }
 
     public void AutoPlacement_Random()
