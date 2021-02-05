@@ -11,6 +11,7 @@ public class ControlCanvas : MonoBehaviour
     private Button startButton = null;
     private GameObject autoPlacementPanel = null;
     private GameObject infoPanel = null;
+    private GameObject panel = null;
 
     void Awake()
     {
@@ -20,7 +21,10 @@ public class ControlCanvas : MonoBehaviour
         autoPlacementPanel = transform.Find("Panel").Find("AutoPlacementPanel").gameObject;
         autoPlacementPanel.SetActive(false);
 
-        startButton = transform.Find("Panel").Find("Start").gameObject.GetComponent<Button>();
+        panel = transform.Find("Panel").gameObject;
+
+        startButton = panel.transform.Find("Start").gameObject.GetComponent<Button>();
+
     }
 
     public void ToggleAutoPlacementPanel()
@@ -52,7 +56,10 @@ public class ControlCanvas : MonoBehaviour
 
     void Update()
     {
-        infoPanel.SetActive(grid.IsDragging);
-        ToggleReadyButton(grid.IsReadyToStart);
+        if (panel.activeSelf) 
+        {
+            infoPanel.SetActive(grid.IsDragging);
+            ToggleReadyButton(grid.IsReadyToStart);
+        }        
     }
 }
