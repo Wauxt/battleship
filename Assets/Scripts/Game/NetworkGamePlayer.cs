@@ -50,17 +50,16 @@ public class NetworkGamePlayer : NetworkBehaviour
     public void SetDisplayName(string name) => displayName = name;
 
     [Command]
-    public void CmdReadyUp() 
-    { 
-        placementIsReady = true;
-        GameObject.Find("GameManager").GetComponent<OnlineGameManager>().RpcUpdatePlacementAnimation();
+    public void CmdReadyUp()
+    {        
+        placementIsReady = true;        
+        StartCoroutine(UpdateStuff(1f));        
     }
 
-    
-
-
-
-
-
+    private IEnumerator UpdateStuff(float count)
+    {
+        yield return new WaitForSeconds(count);
+        GameObject.Find("GameManager").GetComponent<OnlineGameManager>().RpcUpdateLoadingRings();
+    }
 
 }

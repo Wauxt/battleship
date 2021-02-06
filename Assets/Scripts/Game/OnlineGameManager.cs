@@ -46,7 +46,7 @@ public class OnlineGameManager : NetworkBehaviour
     {
         sharedCanvas = GameObject.Find("SharedCanvas");
 
-        if (isServer && isClient) 
+        if (isServer && isClient) // host/left/player01
         {
             Debug.Log("\"Hello! I'm the host (player_01, AKA The Left Player)\" - said the OGM");
 
@@ -60,8 +60,9 @@ public class OnlineGameManager : NetworkBehaviour
             opponentTerrain = GameObject.Find("Terrain_02");
 
             sharedCanvas.transform.Find("Coords").Find("Right").gameObject.SetActive(false);
+            sharedCanvas.transform.Find("LoadingRings").Find("Left").gameObject.SetActive(false);
         }
-        else if (isClientOnly)
+        else if (isClientOnly) // // clientonly/right/player02
         {           
             Debug.Log("\"Hello! I'm the client (player_02, AKA The Right Player)\" - said the OGM");
 
@@ -75,6 +76,7 @@ public class OnlineGameManager : NetworkBehaviour
             opponentTerrain = GameObject.Find("Terrain_01");
 
             sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(false);
+            sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(false);
         }
 
         /////////
@@ -102,52 +104,57 @@ public class OnlineGameManager : NetworkBehaviour
 
         // disable opponent's buttons and fleet terrain
         opponentCanvas.transform.Find("Panel").gameObject.SetActive(false);
-        opponentTerrain.gameObject.SetActive(false);
-
-        // turn animation on
-        opponentCanvas.transform.Find("PlacementAnimations").GetComponent<Animator>().SetBool("OpponentIsReady", false);
+        opponentTerrain.gameObject.SetActive(false);        
 
     }
+    [ClientRpc]
+    public void RpcUpdateLoadingRings()
+    {
+        NetworkGamePlayer gamePlayer = opponentGamePlayer.GetComponent<NetworkGamePlayer>();
+
+        if (!gamePlayer.netIdentity.isServer) // meaning, that our opponent is in the left
+        {
+            sharedCanvas.transform.Find("LoadingRings").Find("Left").gameObject.SetActive(!gamePlayer.placementIsReady);
+        }
+        else // meaning, that our opponent is in the right
+        {
+            sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(!gamePlayer.placementIsReady);
+        }
+    }    
+
     public void GoBackToMainMenu() => Room.IngameDisconnect();
+    [ClientRpc] public void DebugStuf() => Debug.Log("bullshit");
     public void ReadyToBattle()
     {
         sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(true);
         sharedCanvas.transform.Find("Coords").Find("Right").gameObject.SetActive(true);
 
-        opponentTerrain.gameObject.SetActive(true);
+        ownCanvas.transform.Find("Panel").gameObject.SetActive(false);
 
-        GameObject[] players = new GameObject[2];
+        opponentTerrain.gameObject.SetActive(true);        
+
+        ownGamePlayer.GetComponent<NetworkGamePlayer>().CmdReadyUp();        
+
+            GameObject[] players = new GameObject[2];
         players = GameObject.FindGameObjectsWithTag("Player");
 
         foreach (GameObject player in players)
-        {            
+        {
             if (player.GetComponent<NetworkIdentity>().hasAuthority)
             {
-                ownPlayer = player;                
+                ownPlayer = player;
             }
             else
             {
                 opponentPlayer = player;
             }
-        }        
-
-        //////////////
-
-        ownGamePlayer.GetComponent<NetworkGamePlayer>().CmdReadyUp();
-        
+        }
 
         StartCoroutine(PlayerLerpToCenter(ownPlayer));
 
         
-
-    }
-
-    [ClientRpc(excludeOwner = true)]
-    public void RpcUpdatePlacementAnimation()
-    {
-        Animator opponentPlacementAnimator = opponentCanvas.transform.Find("PlacementAnimations").gameObject.GetComponent<Animator>();
-        opponentPlacementAnimator.SetBool("OpponentIsReady", opponentGamePlayer.GetComponent<NetworkGamePlayer>().placementIsReady);        
-    }
+    }     
+    
 
     private IEnumerator PlayerLerpToCenter(GameObject player)
     {
