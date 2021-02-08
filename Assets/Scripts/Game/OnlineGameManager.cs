@@ -9,6 +9,13 @@ using Mirror;
 
 public class OnlineGameManager : NetworkBehaviour
 {
+    public enum Side
+    {
+        Left,
+        Right,
+        Default
+    }
+
     private NetworkManagerBS room;
     private NetworkManagerBS Room
     {
@@ -20,7 +27,7 @@ public class OnlineGameManager : NetworkBehaviour
             }
             return room = NetworkManager.singleton as NetworkManagerBS;
         }
-    }
+    }    
 
     [Header("Players")]
     [SerializeField] private GameObject ownPlayer = null;
@@ -40,16 +47,25 @@ public class OnlineGameManager : NetworkBehaviour
     [SerializeField] private GameObject ownCanvas = null;
     [SerializeField] private GameObject opponentCanvas = null;
     [SerializeField] private GameObject sharedCanvas = null;
+    [SerializeField] private GameObject battlefield = null;
 
-    
+
+    [SyncVar] private Side whoseTurn = Side.Default;
+    [SyncVar] private string placement_01 = "";
+    [SyncVar] private string placement_02 = "";
+
+    //private Side ogmSide = Side.Default;
+
+    public Side WhoseTurn { get { return whoseTurn; } set { whoseTurn = value; } }
+    public string Placement_01 { get { return placement_01; } set { placement_01 = value; } }
+    public string Placement_02 { get { return placement_02; } set { placement_02 = value; } }
+
     public override void OnStartClient()
     {
         sharedCanvas = GameObject.Find("SharedCanvas");
 
-        if (isServer && isClient) // host/left/player01
+        if (isServer && isClient) // meaning we are host's OGM
         {
-            Debug.Log("\"Hello! I'm the host (player_01, AKA The Left Player)\" - said the OGM");
-
             ownGrid = GameObject.Find("Grid_01");
             opponentGrid = GameObject.Find("Grid_02");
 
@@ -61,11 +77,11 @@ public class OnlineGameManager : NetworkBehaviour
 
             sharedCanvas.transform.Find("Coords").Find("Right").gameObject.SetActive(false);
             sharedCanvas.transform.Find("LoadingRings").Find("Left").gameObject.SetActive(false);
-        }
-        else if (isClientOnly) // // clientonly/right/player02
-        {           
-            Debug.Log("\"Hello! I'm the client (player_02, AKA The Right Player)\" - said the OGM");
 
+            battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (right)").gameObject;            
+        }
+        else if (isClientOnly) // meaning we are clientOnly's OGM
+        {
             ownGrid = GameObject.Find("Grid_02");
             opponentGrid = GameObject.Find("Grid_01");
 
@@ -77,10 +93,12 @@ public class OnlineGameManager : NetworkBehaviour
 
             sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(false);
             sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(false);
+
+            battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (left)").gameObject;            
         }
 
         /////////
-        
+
         GameObject[] players = new GameObject[2];
         players = GameObject.FindGameObjectsWithTag("GamePlayer");
 
@@ -104,26 +122,34 @@ public class OnlineGameManager : NetworkBehaviour
 
         // disable opponent's buttons and fleet terrain
         opponentCanvas.transform.Find("Panel").gameObject.SetActive(false);
-        opponentTerrain.gameObject.SetActive(false);        
+        opponentTerrain.gameObject.SetActive(false);
 
     }
+    
     [ClientRpc]
     public void RpcUpdateLoadingRings()
     {
-        NetworkGamePlayer gamePlayer = opponentGamePlayer.GetComponent<NetworkGamePlayer>();
+        NetworkGamePlayer gamePlayer = opponentGamePlayer.GetComponent<NetworkGamePlayer>();        
 
-        if (!gamePlayer.netIdentity.isServer) // meaning, that our opponent is in the left
+        if (gamePlayer.mySide == Side.Left) // meaning, that our opponent is in the left
         {
             sharedCanvas.transform.Find("LoadingRings").Find("Left").gameObject.SetActive(!gamePlayer.placementIsReady);
         }
-        else // meaning, that our opponent is in the right
+        else if (gamePlayer.mySide == Side.Right) // meaning, that our opponent is in the right
         {
             sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(!gamePlayer.placementIsReady);
         }
-    }    
-
+    }
+    
+    [ClientRpc]
+    public void RpcUpdateBattleFields()
+    {
+        if (whoseTurn == ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
+        {
+            battlefield.SetActive(opponentGamePlayer.GetComponent<NetworkGamePlayer>().placementIsReady);
+        }
+    }
     public void GoBackToMainMenu() => Room.IngameDisconnect();
-    [ClientRpc] public void DebugStuf() => Debug.Log("bullshit");
     public void ReadyToBattle()
     {
         sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(true);
@@ -131,12 +157,15 @@ public class OnlineGameManager : NetworkBehaviour
 
         ownCanvas.transform.Find("Panel").gameObject.SetActive(false);
 
-        opponentTerrain.gameObject.SetActive(true);        
+        opponentTerrain.gameObject.SetActive(true);
 
-        ownGamePlayer.GetComponent<NetworkGamePlayer>().CmdReadyUp();        
+        ownGamePlayer.GetComponent<NetworkGamePlayer>().CmdReadyUp();
 
-            GameObject[] players = new GameObject[2];
-        players = GameObject.FindGameObjectsWithTag("Player");
+        string myplacement = ownGamePlayer.GetComponent<NetworkGamePlayer>().GetMyPlacement();
+        CmdUpdatePlacement(ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide, myplacement);
+
+        GameObject[] players = new GameObject[2];
+        players = GameObject.FindGameObjectsWithTag("Player");        
 
         foreach (GameObject player in players)
         {
@@ -151,11 +180,7 @@ public class OnlineGameManager : NetworkBehaviour
         }
 
         StartCoroutine(PlayerLerpToCenter(ownPlayer));
-
-        
-    }     
-    
-
+    }        
     private IEnumerator PlayerLerpToCenter(GameObject player)
     {
         Vector3 startPos = player.transform.localPosition;
@@ -172,6 +197,17 @@ public class OnlineGameManager : NetworkBehaviour
             yield return null;
         }
     }
-    
 
+    [Command(ignoreAuthority = true)]
+    public void CmdUpdatePlacement(Side side, string placement)
+    {
+        if (side == Side.Left)
+        {
+            Placement_01 = placement;
+        }
+        else if (side == Side.Right)
+        {
+            Placement_02 = placement;
+        }
+    }
 }

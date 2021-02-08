@@ -7,14 +7,18 @@ using System;
 using System.Linq;
 using Mirror;
 
+
+
 public class NetworkManagerBS : NetworkManager
-{
+{    
+
     [Header("Room")]
     [SerializeField] private NetworkRoomPlayer roomPlayerPrefab = null;
 
     [Header("Game")]
     [SerializeField] private NetworkGamePlayer gamePlayerPrefab = null;
     [SerializeField] private GameObject playerSpawnSystem = null;
+        
 
     private int minPlayers = 2;
 
@@ -29,8 +33,7 @@ public class NetworkManagerBS : NetworkManager
     public event Action<NetworkConnection> OnServerReadied;
 
     public List<NetworkRoomPlayer> RoomPlayers { get; } = new List<NetworkRoomPlayer>();
-    public List<NetworkGamePlayer> GamePlayers { get; } = new List<NetworkGamePlayer>();
-
+    public List<NetworkGamePlayer> GamePlayers { get; } = new List<NetworkGamePlayer>();    
 
     public override void OnStartServer()                                // Initialization
     {
@@ -90,7 +93,7 @@ public class NetworkManagerBS : NetworkManager
                     //Destroy(gameObject);
                     break;
                 }
-        }
+        }        
     }
     public override void OnServerDisconnect(NetworkConnection conn)     // -------- Both LOBBY and GAME --------- (invoking some functions)
     {

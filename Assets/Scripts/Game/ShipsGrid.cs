@@ -15,17 +15,11 @@ public class ShipsGrid : MonoBehaviour
         
     public List<BoxCollider> ShipsColliders() { return shipsColliders; }
     public bool IsReadyToStart { get { return isReadyToStart; } }
-    public bool IsDragging { get { return isDragging; } set { isDragging = value; } }
-        
-    public int[,] GetGridCells()
-    {
-        int[,] result = new int[10, 10];
-        return result;
-    }
+    public bool IsDragging { get { return isDragging; } set { isDragging = value; } }        
+    public int[,] GridCells { get { return gridCells.Clone() as int[,]; } }    
     
     void Awake()
-    {
-        
+    {        
         shipsColliders = new List<BoxCollider>();
         gridCells = new int[10, 10];
         isReadyToStart = false;        
@@ -35,7 +29,6 @@ public class ShipsGrid : MonoBehaviour
             shipsColliders.Add(transform.GetChild(i).GetComponent<BoxCollider>());
         }
     }
-
     public bool AllShipsAreInsideGrid()
     {
         for (int i = 0; i < shipsColliders.Count; i++)
@@ -48,7 +41,6 @@ public class ShipsGrid : MonoBehaviour
         }
         return true;
     }
-
     public void SwitchReadyState() => isReadyToStart = AllShipsAreInsideGrid() ? true : false;    
 
     public void EndPlacement()
@@ -102,7 +94,6 @@ public class ShipsGrid : MonoBehaviour
                 Destroy(ship.gameObject);
         }
     }
-
     public void AutoPlacement_Random()
     {
         transform.GetChild(0).GetComponent<Ship>().DeleteAllShips();
@@ -123,7 +114,6 @@ public class ShipsGrid : MonoBehaviour
 
         SwitchReadyState();
     }
-
     public void AutoPlacement_AntiDiagonal()
     {
         transform.GetChild(0).GetComponent<Ship>().DeleteAllShips();
@@ -148,7 +138,6 @@ public class ShipsGrid : MonoBehaviour
 
         SwitchReadyState();
     }
-
     public void AutoPlacement_Coasts()
     {
         transform.GetChild(0).GetComponent<Ship>().DeleteAllShips();
@@ -344,7 +333,4 @@ public class ShipsGrid : MonoBehaviour
 
         return result;
     }
-
-    
-
 }
