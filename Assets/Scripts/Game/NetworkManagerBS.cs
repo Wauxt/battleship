@@ -10,7 +10,7 @@ using Mirror;
 
 
 public class NetworkManagerBS : NetworkManager
-{    
+{
 
     [Header("Room")]
     [SerializeField] private NetworkRoomPlayer roomPlayerPrefab = null;
@@ -18,7 +18,9 @@ public class NetworkManagerBS : NetworkManager
     [Header("Game")]
     [SerializeField] private NetworkGamePlayer gamePlayerPrefab = null;
     [SerializeField] private GameObject playerSpawnSystem = null;
-        
+    [SerializeField] private GameObject shootHitCube = null;
+    //[SerializeField] private GameObject shootMissSplash = null;
+
 
     private int minPlayers = 2;
 
@@ -33,7 +35,7 @@ public class NetworkManagerBS : NetworkManager
     public event Action<NetworkConnection> OnServerReadied;
 
     public List<NetworkRoomPlayer> RoomPlayers { get; } = new List<NetworkRoomPlayer>();
-    public List<NetworkGamePlayer> GamePlayers { get; } = new List<NetworkGamePlayer>();    
+    public List<NetworkGamePlayer> GamePlayers { get; } = new List<NetworkGamePlayer>();
 
     public override void OnStartServer()                                // Initialization
     {
@@ -93,7 +95,7 @@ public class NetworkManagerBS : NetworkManager
                     //Destroy(gameObject);
                     break;
                 }
-        }        
+        }
     }
     public override void OnServerDisconnect(NetworkConnection conn)     // -------- Both LOBBY and GAME --------- (invoking some functions)
     {
@@ -211,9 +213,16 @@ public class NetworkManagerBS : NetworkManager
         {
             StopClient();
             Debug.Log("Disconnecting...");
-        }        
+        }
         SceneManager.LoadScene("Menu");
         Destroy(gameObject);
+    }
+
+    public void SpawnDeckHit(Vector3 position)         // --------------- GAME -----------------
+    {
+        GameObject deckInstance = Instantiate(shootHitCube);
+        deckInstance.transform.position = position;
+        NetworkServer.Spawn(deckInstance);
     }
 
 }

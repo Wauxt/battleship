@@ -790,6 +790,8 @@ MonoBehaviour:
     type: 3}
   playerSpawnSystem: {fileID: 4203174921405390314, guid: 29a609117674dfc4298bc16a811959d2,
     type: 3}
+  shootHitCube: {fileID: 3406656493906319420, guid: b979c4b3fa36e5547a823829768290d5,
+    type: 3}
 --- !u!4 &123743336
 Transform:
   m_ObjectHideFlags: 0

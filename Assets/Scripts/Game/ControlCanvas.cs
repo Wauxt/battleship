@@ -4,14 +4,14 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class ControlCanvas : MonoBehaviour
+public class ControlCanvas : MonoBehaviour // basically - placement control canvas*
 {
     [SerializeField] private ShipsGrid grid = null;
 
     private Button startButton = null;
     private GameObject autoPlacementPanel = null;
     private GameObject infoPanel = null;
-    private GameObject panel = null;
+    private GameObject panel = null;    
 
     void Awake()
     {
@@ -51,8 +51,7 @@ public class ControlCanvas : MonoBehaviour
 
     public void P_Random() => grid.AutoPlacement_Random();   
     public void P_Anti_Diagonal() => grid.AutoPlacement_AntiDiagonal();
-    public void P_Coasts() => grid.AutoPlacement_Coasts();
-    
+    public void P_Coasts() => grid.AutoPlacement_Coasts();    
 
     void Update()
     {
@@ -61,5 +60,5 @@ public class ControlCanvas : MonoBehaviour
             infoPanel.SetActive(grid.IsDragging);
             ToggleReadyButton(grid.IsReadyToStart);
         }        
-    }
+    }    
 }
