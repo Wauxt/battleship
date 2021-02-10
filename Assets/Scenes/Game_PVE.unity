@@ -236,7 +236,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (1)
+      value: Ship1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -449,7 +449,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (4)
+      value: Ship4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -1293,7 +1293,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (6)
+      value: Ship6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -1823,7 +1823,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (9)
+      value: Ship9
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -2230,6 +2230,7 @@ GameObject:
   m_Component:
   - component: {fileID: 965448828}
   - component: {fileID: 965448827}
+  - component: {fileID: 965448829}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -2263,6 +2264,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &965448829
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 965448826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99ac67ce98d26764da150b4860b063a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &968506274
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2348,7 +2361,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (3)
+      value: Ship3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -2604,7 +2617,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (8)
+      value: Ship8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -3060,7 +3073,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (2)
+      value: Ship2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -3239,7 +3252,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (7)
+      value: Ship7
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -4186,7 +4199,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship (5)
+      value: Ship5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -5382,11 +5395,22 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 8039563415875681865}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 965448829}
+        m_MethodName: Save
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!224 &8039563415875681867
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5729,11 +5753,22 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 0
+  m_Interactable: 1
   m_TargetGraphic: {fileID: 8039563415979674851}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 965448829}
+        m_MethodName: Load
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!224 &8039563415979674849
 RectTransform:
   m_ObjectHideFlags: 0
@@ -5980,7 +6015,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<color=grey>\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \n\u0448\u0430\u0431\u043B\u043E\u043D</color>"
+  m_text: "\u0417\u0430\u0433\u0440\u0443\u0437\u0438\u0442\u044C \n\u0448\u0430\u0431\u043B\u043E\u043D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
   m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
@@ -6103,7 +6138,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "<color=grey>\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \n\u0448\u0430\u0431\u043B\u043E\u043D</color>"
+  m_text: "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C \n\u0448\u0430\u0431\u043B\u043E\u043D"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
   m_sharedMaterial: {fileID: 2164040, guid: 5302535af1044152a457ed104f1f4b91, type: 2}
@@ -6678,7 +6713,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship
+      value: Ship0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
