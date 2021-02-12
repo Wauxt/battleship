@@ -4,58 +4,98 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using SFB;
 
 public class SavePatternSystem : MonoBehaviour
 {
+    [SerializeField]
+    private GameObject modalPanel = null;
     public void Save()
     {
         int i = 0;
         BinaryFormatter bf = new BinaryFormatter();
-        FileStream file = File.Create(Application.persistentDataPath
-          + "/MySaveData.dat");
-        SavePattern data = new SavePattern();
-        data.position[i] = new SVector3();
-        data.rotation[i] = new SQuaternion();
-        GameObject tr;
         
-        for (i = 0; i < 10; i++)
+        var extensionList = new[] {
+            new ExtensionFilter("Data", "dat"),
+        };
+        var path = StandaloneFileBrowser.SaveFilePanel(" Сохранить файл ", "C:\\Users\\user\\Desktop\\mysave", "MySave",extensionList);
+        if (path.Length != 0)
         {
-            tr = GameObject.Find("Ship" + i.ToString());
-            data.position[i] = tr.transform.localPosition;
-            data.rotation[i] = tr.transform.localRotation;
+            FileStream file = File.Create(path);
+            SavePattern data = new SavePattern();
+            data.position[i] = new SVector3();
+            data.rotation[i] = new SQuaternion();
+            GameObject tr;
+
+            for (i = 0; i < 10; i++)
+            {
+                tr = GameObject.Find("Ship" + i.ToString());
+                data.position[i] = tr.transform.localPosition;
+                data.rotation[i] = tr.transform.localRotation;
+            }
+            bf.Serialize(file, data);
+            file.Close();
+
         }
-        bf.Serialize(file, data);
-        file.Close();
         Debug.Log("Game data saved!");        
     }
 
     public void Load()
     {
-        int i = 0;
-        if (File.Exists(Application.persistentDataPath
-    + "/MySaveData.dat"))
+        var extensions = new[] {
+            new ExtensionFilter("Data", "dat"),
+        };
+        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "C:\\Users\\user\\Desktop\\mysave", extensions, false);
+        if (path.Length!=0)
         {
+            int i = 0;
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file =
-              File.Open(Application.persistentDataPath
-              + "/MySaveData.dat", FileMode.Open);
-            SavePattern data = (SavePattern)bf.Deserialize(file);
-            file.Close();
-            GameObject tr;            
-
-            for (i = 0; i < 10; i++)
+            File.Open(path[0], FileMode.Open);
+            try
             {
-                tr = GameObject.Find("Ship" + i.ToString());
-                tr.transform.localPosition = new Vector3(data.position[i].x, data.position[i].y, data.position[i].z);
-                tr.transform.localRotation = new Quaternion(0, data.rotation[i].y, 0, data.rotation[i].w);
-                tr.transform.localScale = new Vector3(1f, 0.4f, 1f);
-            }
+                SavePattern data = (SavePattern)bf.Deserialize(file);
+                GameObject tr;
 
-            Debug.Log("Game data loaded!");
+                for (i = 0; i < 10; i++)
+                {
+                    tr = GameObject.Find("Ship" + i.ToString());
+                    tr.transform.localPosition = new Vector3(data.position[i].x, data.position[i].y, data.position[i].z);
+                    tr.transform.localRotation = new Quaternion(0, data.rotation[i].y, 0, data.rotation[i].w);
+                    if (data.position[i].x >= 0)
+                        tr.transform.localScale = new Vector3(1f, 0.4f, 1f);
+                    else
+                        tr.transform.localScale = new Vector3(0.5f, 0.2f, 0.5f);
+                }
+            }
+            catch
+            {
+                modalPanel.SetActive(true);
+            }
+            file.Close();
         }
-        else
-            Debug.Log("There is no save data!");
     }
+
+    public void Modal_Panel() 
+    {
+        GameObject.Find("Modal Panel").SetActive(false);
+    }
+
+    /// <summary>
+    public bool DeckOverlappsAnyOtherShip(Transform deck)
+    {
+        ShipsGrid shipsGrid;
+        shipsGrid = transform.parent.GetComponent<ShipsGrid>();
+        BoxCollider deckCollider = deck.GetComponent<BoxCollider>();
+        for (int i = 0; i < 10; i++)
+        {
+            if (deck.parent.gameObject.GetInstanceID() != shipsGrid.ShipsColliders()[i].gameObject.GetInstanceID())
+                if (deckCollider.bounds.Intersects(shipsGrid.ShipsColliders()[i].bounds))
+                    return true;
+        }
+        return false;
+    }
+    /// </summary>
 
     [Serializable]
     class SavePattern
