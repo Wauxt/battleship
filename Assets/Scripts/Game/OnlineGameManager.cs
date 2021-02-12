@@ -27,7 +27,7 @@ public class OnlineGameManager : NetworkBehaviour
             }
             return room = NetworkManager.singleton as NetworkManagerBS;
         }
-    }    
+    }
 
     [Header("Players")]
     [SerializeField] private GameObject ownPlayer = null;
@@ -53,7 +53,7 @@ public class OnlineGameManager : NetworkBehaviour
     [SyncVar] private Side whoseTurn = Side.Default;
     [SyncVar] private string placement_01 = "";
     [SyncVar] private string placement_02 = "";
-    
+
 
     public Side WhoseTurn { get { return whoseTurn; } set { whoseTurn = value; } }
     public string Placement_01 { get { return placement_01; } set { placement_01 = value; } }
@@ -77,7 +77,7 @@ public class OnlineGameManager : NetworkBehaviour
             sharedCanvas.transform.Find("Coords").Find("Right").gameObject.SetActive(false);
             sharedCanvas.transform.Find("LoadingRings").Find("Left").gameObject.SetActive(false);
 
-            battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (right)").gameObject;            
+            battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (right)").gameObject;
         }
         else if (isClientOnly) // meaning we are clientOnly's OGM
         {
@@ -93,7 +93,7 @@ public class OnlineGameManager : NetworkBehaviour
             sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(false);
             sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(false);
 
-            battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (left)").gameObject;            
+            battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (left)").gameObject;
         }
 
         /////////
@@ -124,11 +124,11 @@ public class OnlineGameManager : NetworkBehaviour
         opponentTerrain.gameObject.SetActive(false);
 
     }
-    
+
     [ClientRpc]
     public void RpcUpdateLoadingRings()
     {
-        NetworkGamePlayer gamePlayer = opponentGamePlayer.GetComponent<NetworkGamePlayer>();        
+        NetworkGamePlayer gamePlayer = opponentGamePlayer.GetComponent<NetworkGamePlayer>();
 
         if (gamePlayer.mySide == Side.Left) // meaning, that our opponent is in the left
         {
@@ -139,13 +139,26 @@ public class OnlineGameManager : NetworkBehaviour
             sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(!gamePlayer.placementIsReady);
         }
     }
-    
+
+    [ClientRpc]
+    public void RpcUpdateBattleFieldsAfterPlacement()
+    {
+        if (whoseTurn == ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
+        {
+            battlefield.SetActive(opponentGamePlayer.GetComponent<NetworkGamePlayer>().placementIsReady);
+        }
+    }
+
     [ClientRpc]
     public void RpcUpdateBattleFields()
     {
         if (whoseTurn == ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
         {
-            battlefield.SetActive(opponentGamePlayer.GetComponent<NetworkGamePlayer>().placementIsReady);
+            battlefield.SetActive(true);
+        }
+        else
+        {
+            battlefield.SetActive(false);
         }
     }
     public void GoBackToMainMenu() => Room.IngameDisconnect();
@@ -164,7 +177,7 @@ public class OnlineGameManager : NetworkBehaviour
         CmdSetPlacement(ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide, myplacement);
 
         GameObject[] players = new GameObject[2];
-        players = GameObject.FindGameObjectsWithTag("Player");        
+        players = GameObject.FindGameObjectsWithTag("Player");
 
         foreach (GameObject player in players)
         {
@@ -179,7 +192,7 @@ public class OnlineGameManager : NetworkBehaviour
         }
 
         StartCoroutine(PlayerLerpToCenter(ownPlayer));
-    }        
+    }
     private IEnumerator PlayerLerpToCenter(GameObject player)
     {
         Vector3 startPos = player.transform.localPosition;
@@ -211,53 +224,161 @@ public class OnlineGameManager : NetworkBehaviour
     }
 
     [Command(ignoreAuthority = true)]
-    public void CmdShootAndUpdateCell(Side shooter, int row, int column)
+    public void CmdShootAndUpdateCell(Side shooter, int row, int column) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
     {        
-        int index = 10 * row + column;        
+         
+        string targetPlacement = shooter == Side.Left ? Placement_02 : Placement_01;
+        int[,] targetCells = new int[10, 10];
         
 
-        if (shooter == Side.Left) // meaning, we should check RIGHT side (or placement_02)
+        for (int i = 0; i < 10; i++)
         {
-            if (Placement_02[index] == '0')
+            for (int j = 0; j < 10; j++)
             {
-                Debug.Log("left player: miss " + index);
-                Placement_02 = ReplaceAtIndex(index, '3', Placement_02);
-            }
-            else if (Placement_02[index] == '1')
-            {
-                Debug.Log("left player: hit! " + index);
-                Placement_02 = ReplaceAtIndex(index, '4', Placement_02);
-                Room.SpawnDeckHit(new Vector3(515 + (column * 10), 0, 145 - (row * 10)));
+                targetCells[i, j] = int.Parse(targetPlacement[i * 10 + j].ToString());
             }
         }
-        else if (shooter == Side.Right) // meaning, we should check LEFT side (or placement_01)
+
+        targetCells[row, column] = targetCells[row, column] == 0 ? 3 : 4;
+
+        bool hit = targetCells[row, column] == 4;
+        Room.SpawnMarkerHitOrMiss(shooter, row, column, hit);
+        
+        if (hit)
+        {            
+            Room.SpawnDeckHit(new Vector3((shooter == Side.Left ? 515 : 395) + (column*10), 0, 145 - (row * 10)));
+
+            if (!AnyAliveDeckAround(targetCells, row, column)) // if that was the last deck
+            {
+                // find all decks of that ship
+                int i = row;
+                int j = column;
+
+                if (targetCells[row >= 1 ? row - 1 : row + 1, column] == 4 || targetCells[row <= 8 ? row + 1 : row-1, column] == 4) // vertical ?
+                {
+                    // find top deck, or go up untill row != 1
+                    while (targetCells[i, j] == 4 && row != 1)
+                    {
+                        if (i > 1) { i--; }
+                        else if (i < 1) { i++; }
+                    }
+
+                    // splash, go down, repeat
+                    while (targetCells[i,j] == 4 && i <= 8)
+                    {
+                        if (j >= 1) // if there are still some cells to the left
+                        {
+                            targetCells[i - 1, j - 1] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i-1, j - 1, false);
+                            
+                            targetCells[i, j - 1] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i, j - 1, false);
+
+                            targetCells[i+1, j - 1] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i+1, j - 1, false);
+                        }                        
+                        if (j <= 8) // if there are still some cells to the right
+                        {
+                            targetCells[i - 1, j + 1] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i - 1, j + 1, false);
+
+                            targetCells[i, j + 1] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i, j + 1, false);
+
+                            targetCells[i, j + 1] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i + 1, j + 1, false);
+                        }
+                        if (targetCells[i-1,j] == 0)
+                        {
+                            targetCells[i - 1, j] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i - 1, j, false);
+                        }
+                        if (targetCells[i + 1, j] == 0)
+                        {
+                            targetCells[i + 1, j] = 3;
+                            Room.SpawnMarkerHitOrMiss(shooter, i + 1, j, false);                            
+                        }
+                    }
+
+                    
+
+                }
+                else if (targetCells[row, column >= 1 ? column - 1 : column + 1] == 4 || targetCells[row, column <= 8 ? column + 1 : column - 1] == 4) // horizontal ?
+                {
+
+                }
+
+
+                // splash everything around it
+            }            
+        }
+
+        targetPlacement = "";
+        for (int i = 0; i< 10; i++)
         {
-            if (Placement_01[index] == '0')
+            for (int j = 0; j<10; j++)
             {
-                Debug.Log("right player: miss " + index);
-                Placement_01 = ReplaceAtIndex(index, '3', Placement_01);
-            }
-            else if (Placement_01[index] == '1')
-            {
-                Debug.Log("right player: hit! " + index);
-                Placement_01 = ReplaceAtIndex(index, '4', Placement_01);
-                Room.SpawnDeckHit(new Vector3(500, 0, 100));
+                targetPlacement += targetCells[i, j].ToString();
             }
         }
+
+        if (shooter == Side.Left)
+        {
+            Placement_02 = targetPlacement;
+        }
+        else if (shooter == Side.Right)
+        {
+            Placement_01 = targetPlacement;
+        }        
     }
+
+    [Server]
+    public bool AnyAliveDeckAround(int[,] targetCells, int row, int column)
+    {
+        for (int i = (row >= 1) ? row - 1 : row; i < ((row <= 8) ? row + 1 : row); i++)
+        {
+            for (int j = (column >= 1) ? column - 1 : column; j < ((column <= 8) ? column + 1 : column); j++)
+            {
+                if (targetCells[i, j] == 1)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     public void ShootCell(Button contextButton)
     {
-        contextButton.interactable = false;
+        if (WhoseTurn != ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
+        {
+            return;
+        }
+
         int row = int.Parse(contextButton.gameObject.transform.parent.gameObject.name.Substring(5, 1));
-        int column = int.Parse(contextButton.gameObject.name.Substring(6, 1));        
+        int column = int.Parse(contextButton.gameObject.name.Substring(6, 1));
+        string targetPlacement = WhoseTurn == Side.Left ? Placement_02 : Placement_01;
+        
+        if (targetPlacement[10*row + column] == '3' || targetPlacement[10 * row + column] == '4')
+        {
+            return;
+        }
 
         CmdShootAndUpdateCell(WhoseTurn, row, column);
+        //CmdSwitchTurn();
     }
-    
-    static string ReplaceAtIndex(int i, char newChar, string str)
+
+    [Command(ignoreAuthority = true)]
+    public void CmdSwitchTurn() 
+    { 
+        WhoseTurn = WhoseTurn == Side.Left ? Side.Right : Side.Left;
+        StartCoroutine(UpdateFieldsAfterSeconds(.5f));
+    }
+
+    private IEnumerator UpdateFieldsAfterSeconds(float count)
     {
-        char[] charArr = str.ToCharArray();
-        charArr[i] = newChar;
-        return string.Join("", charArr);
+        yield return new WaitForSeconds(count);
+        RpcUpdateBattleFields();
     }
 }

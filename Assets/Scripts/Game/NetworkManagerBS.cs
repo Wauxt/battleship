@@ -19,7 +19,7 @@ public class NetworkManagerBS : NetworkManager
     [SerializeField] private NetworkGamePlayer gamePlayerPrefab = null;
     [SerializeField] private GameObject playerSpawnSystem = null;
     [SerializeField] private GameObject shootHitCube = null;
-    //[SerializeField] private GameObject shootMissSplash = null;
+    [SerializeField] private GameObject shootMissSplash = null;
 
 
     private int minPlayers = 2;
@@ -224,5 +224,20 @@ public class NetworkManagerBS : NetworkManager
         deckInstance.transform.position = position;
         NetworkServer.Spawn(deckInstance);
     }
+
+    public void SpawnSplashMiss(Vector3 position)         // --------------- GAME -----------------
+    {
+        GameObject deckInstance = Instantiate(shootMissSplash);
+        deckInstance.transform.position = position;
+        NetworkServer.Spawn(deckInstance);
+    }
+
+    public void SpawnMarkerHitOrMiss(OnlineGameManager.Side shooter, int row, int column, bool hit)         // --------------- GAME -----------------
+    {
+        Vector3 position = new Vector3((shooter == OnlineGameManager.Side.Left ? 515 : 395) + (column * 10), 0, 145 - (row * 10));
+        GameObject marker = hit ? Instantiate(shootHitCube) : Instantiate(shootMissSplash);
+        marker.transform.position = position;
+        NetworkServer.Spawn(marker);
+    }   
 
 }

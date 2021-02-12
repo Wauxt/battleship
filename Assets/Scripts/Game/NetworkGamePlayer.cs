@@ -104,6 +104,6 @@ public class NetworkGamePlayer : NetworkBehaviour
     {
         yield return new WaitForSeconds(count);
         OGM.RpcUpdateLoadingRings();
-        OGM.RpcUpdateBattleFields();
+        OGM.RpcUpdateBattleFieldsAfterPlacement();
     }
 }

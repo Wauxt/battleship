@@ -792,6 +792,8 @@ MonoBehaviour:
     type: 3}
   shootHitCube: {fileID: 3406656493906319420, guid: b979c4b3fa36e5547a823829768290d5,
     type: 3}
+  shootMissSplash: {fileID: 3406656493906319420, guid: cd079d9aaf5274d44b719f39282aa65a,
+    type: 3}
 --- !u!4 &123743336
 Transform:
   m_ObjectHideFlags: 0
