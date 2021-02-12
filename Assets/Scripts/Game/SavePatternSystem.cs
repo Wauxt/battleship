@@ -10,6 +10,10 @@ public class SavePatternSystem : MonoBehaviour
 {
     [SerializeField]
     private GameObject modalPanel = null;
+
+    [SerializeField]
+    private ShipsGrid shipsGrid = null;
+
     public void Save()
     {
         int i = 0;
@@ -29,7 +33,8 @@ public class SavePatternSystem : MonoBehaviour
 
             for (i = 0; i < 10; i++)
             {
-                tr = GameObject.Find("Ship" + i.ToString());
+                //tr = GameObject.Find("Ship" + i.ToString());
+                tr = shipsGrid.gameObject.transform.GetChild(i).gameObject;
                 data.position[i] = tr.transform.localPosition;
                 data.rotation[i] = tr.transform.localRotation;
             }
@@ -56,10 +61,11 @@ public class SavePatternSystem : MonoBehaviour
             {
                 SavePattern data = (SavePattern)bf.Deserialize(file);
                 GameObject tr;
-
+                
                 for (i = 0; i < 10; i++)
                 {
-                    tr = GameObject.Find("Ship" + i.ToString());
+                    //tr = GameObject.Find("Ship" + i.ToString());
+                    tr = shipsGrid.gameObject.transform.GetChild(i).gameObject;
                     tr.transform.localPosition = new Vector3(data.position[i].x, data.position[i].y, data.position[i].z);
                     tr.transform.localRotation = new Quaternion(0, data.rotation[i].y, 0, data.rotation[i].w);
                     if (data.position[i].x >= 0)
@@ -67,10 +73,15 @@ public class SavePatternSystem : MonoBehaviour
                     else
                         tr.transform.localScale = new Vector3(0.5f, 0.2f, 0.5f);
                 }
+                if (!PlacementIsLegit())
+                {
+
+                }
             }
-            catch
+            catch(Exception e)
             {
                 modalPanel.SetActive(true);
+                Debug.LogError(e.Message);
             }
             file.Close();
         }
@@ -78,22 +89,26 @@ public class SavePatternSystem : MonoBehaviour
 
     public void Modal_Panel() 
     {
-        GameObject.Find("Modal Panel").SetActive(false);
+        //GameObject.Find("Modal Panel").SetActive(false);
+        modalPanel.SetActive(false);
     }
 
     /// <summary>
-    public bool DeckOverlappsAnyOtherShip(Transform deck)
+    public bool PlacementIsLegit()
     {
-        ShipsGrid shipsGrid;
-        shipsGrid = transform.parent.GetComponent<ShipsGrid>();
-        BoxCollider deckCollider = deck.GetComponent<BoxCollider>();
         for (int i = 0; i < 10; i++)
         {
-            if (deck.parent.gameObject.GetInstanceID() != shipsGrid.ShipsColliders()[i].gameObject.GetInstanceID())
-                if (deckCollider.bounds.Intersects(shipsGrid.ShipsColliders()[i].bounds))
-                    return true;
+            Ship curShip = gameObject.transform.GetChild(i).gameObject.GetComponent<Ship>();
+            for (int j = 0; j < curShip.deckAmount; j++)
+            {
+                if (curShip.DeckOverlappsAnyOtherShip(curShip.gameObject.transform.GetChild(j)))
+                {
+                    return false;
+                }
+            }
         }
-        return false;
+
+        return true;
     }
     /// </summary>
 
