@@ -68,6 +68,8 @@ public class OnlineGameManager : NetworkBehaviour
         sharedCanvas = GameObject.Find("SharedCanvas");
         sharedCanvas.transform.Find("NameTags").gameObject.SetActive(false);
 
+        GameObject.Find("MainCamera").transform.Find("Canvas").transform.Find("Bar").transform.Find("Panel").gameObject.SetActive(false);
+
         if (isServer && isClient) // meaning we are host's OGM
         {
             ownGrid = GameObject.Find("Grid_01");
@@ -176,6 +178,8 @@ public class OnlineGameManager : NetworkBehaviour
     {
         sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(true);
         sharedCanvas.transform.Find("Coords").Find("Right").gameObject.SetActive(true);
+
+        GameObject.Find("MainCamera").transform.Find("Canvas").Find("Bar").Find("Panel").gameObject.SetActive(true); // activate bar
 
         ownCanvas.transform.Find("Panel").gameObject.SetActive(false);
 

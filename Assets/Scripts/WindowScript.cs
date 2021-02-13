@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
+using Mirror;
 
 public class WindowScript : MonoBehaviour, IDragHandler
 {
@@ -21,6 +23,11 @@ public class WindowScript : MonoBehaviour, IDragHandler
 
     public void OnCloseBtnClick()
     {
+        if (SceneManager.GetActiveScene().name == "Game_PVP")
+        {
+            NetworkManagerBS Room = NetworkManager.singleton as NetworkManagerBS;
+            Room.IngameDisconnect();
+        }
         EventSystem.current.SetSelectedGameObject(null);
         Application.Quit();
     }

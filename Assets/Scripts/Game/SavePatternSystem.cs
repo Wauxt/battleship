@@ -5,6 +5,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using SFB;
+using Mirror;
 
 public class SavePatternSystem : MonoBehaviour
 {
@@ -13,6 +14,38 @@ public class SavePatternSystem : MonoBehaviour
 
     [SerializeField]
     private ShipsGrid shipsGrid = null;
+
+    private NetworkManagerBS room;
+    private NetworkManagerBS Room
+    {
+        get
+        {
+            if (room != null)
+            {
+                return room;
+            }
+            return room = NetworkManager.singleton as NetworkManagerBS;
+        }
+    }
+
+    public void Start()
+    {
+        if (SceneManager.GetActiveScene().name != "Game_PVP")
+        {
+            return;
+        }
+
+        OnlineGameManager ogm = gameObject.GetComponent<OnlineGameManager>();
+
+        if (ogm.isServer && ogm.isClient)
+        {
+            shipsGrid = GameObject.Find("Grid_01").GetComponent<ShipsGrid>();
+        }
+        else if (ogm.isClientOnly)
+        {
+            shipsGrid = GameObject.Find("Grid_02").GetComponent<ShipsGrid>();
+        }
+    }
 
     public void Save()
     {
