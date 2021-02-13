@@ -472,7 +472,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship1
+      value: Ship (1)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -685,7 +685,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship4
+      value: Ship (4)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -1530,7 +1530,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship6
+      value: Ship (6)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -2060,7 +2060,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship9
+      value: Ship (9)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -2514,6 +2514,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   modalPanel: {fileID: 1576260717}
+  shipsGrid: {fileID: 650096165}
 --- !u!1001 &968506274
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2599,7 +2600,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship3
+      value: Ship (3)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -2986,7 +2987,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship8
+      value: Ship (8)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -3442,7 +3443,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship2
+      value: Ship (2)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -3621,7 +3622,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship7
+      value: Ship (7)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -4643,7 +4644,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship5
+      value: Ship (5)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}
@@ -7290,7 +7291,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship0
+      value: Ship (0)
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c, type: 3}

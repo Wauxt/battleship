@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using Mirror;
+using TMPro;
 
 public class OnlineGameManager : NetworkBehaviour
 {
@@ -48,6 +49,9 @@ public class OnlineGameManager : NetworkBehaviour
     [SerializeField] private GameObject opponentCanvas = null;
     [SerializeField] private GameObject sharedCanvas = null;
     [SerializeField] private GameObject battlefield = null;
+    [SerializeField] private TMP_Text ownNameInfo = null;
+    [SerializeField] private TMP_Text opponentNameInfo = null;
+
 
 
     [SyncVar] private Side whoseTurn = Side.Default;
@@ -62,6 +66,7 @@ public class OnlineGameManager : NetworkBehaviour
     public override void OnStartClient()
     {
         sharedCanvas = GameObject.Find("SharedCanvas");
+        sharedCanvas.transform.Find("NameTags").gameObject.SetActive(false);
 
         if (isServer && isClient) // meaning we are host's OGM
         {
@@ -78,6 +83,9 @@ public class OnlineGameManager : NetworkBehaviour
             sharedCanvas.transform.Find("LoadingRings").Find("Left").gameObject.SetActive(false);
 
             battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (right)").gameObject;
+
+            ownNameInfo = sharedCanvas.transform.Find("NameTags").Find("Name_01").gameObject.GetComponent<TMP_Text>();
+            opponentNameInfo = sharedCanvas.transform.Find("NameTags").Find("Name_02").gameObject.GetComponent<TMP_Text>();
         }
         else if (isClientOnly) // meaning we are clientOnly's OGM
         {
@@ -94,8 +102,10 @@ public class OnlineGameManager : NetworkBehaviour
             sharedCanvas.transform.Find("LoadingRings").Find("Right").gameObject.SetActive(false);
 
             battlefield = sharedCanvas.transform.Find("Battlefields").Find("Field (left)").gameObject;
-        }
 
+            ownNameInfo = sharedCanvas.transform.Find("NameTags").Find("Name_02").gameObject.GetComponent<TMP_Text>();
+            opponentNameInfo = sharedCanvas.transform.Find("NameTags").Find("Name_01").gameObject.GetComponent<TMP_Text>();
+        }
         /////////
 
         GameObject[] players = new GameObject[2];
@@ -173,6 +183,10 @@ public class OnlineGameManager : NetworkBehaviour
 
         ownGamePlayer.GetComponent<NetworkGamePlayer>().CmdReadyUp();
 
+        sharedCanvas.transform.Find("NameTags").gameObject.SetActive(true);
+        ownNameInfo.text = "<color #ff00ff>" + ownGamePlayer.GetComponent<NetworkGamePlayer>().displayName + "</color>";
+        opponentNameInfo.text = "<color #ff0000>" + opponentGamePlayer.GetComponent<NetworkGamePlayer>().displayName + "</color>";
+
         string myplacement = ownGamePlayer.GetComponent<NetworkGamePlayer>().GetMyPlacement();
         CmdSetPlacement(ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide, myplacement);
 
@@ -193,6 +207,7 @@ public class OnlineGameManager : NetworkBehaviour
 
         StartCoroutine(PlayerLerpToCenter(ownPlayer));
     }
+
     private IEnumerator PlayerLerpToCenter(GameObject player)
     {
         Vector3 startPos = player.transform.localPosition;
@@ -225,11 +240,11 @@ public class OnlineGameManager : NetworkBehaviour
 
     [Command(ignoreAuthority = true)]
     public void CmdShootAndUpdateCell(Side shooter, int row, int column) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
-    {        
-         
+    {
+
         string targetPlacement = shooter == Side.Left ? Placement_02 : Placement_01;
         int[,] targetCells = new int[10, 10];
-        
+
 
         for (int i = 0; i < 10; i++)
         {
@@ -238,85 +253,108 @@ public class OnlineGameManager : NetworkBehaviour
                 targetCells[i, j] = int.Parse(targetPlacement[i * 10 + j].ToString());
             }
         }
+        bool hit = targetCells[row, column] == 1;
+        targetCells[row, column] = hit ? 4 : 3;
 
-        targetCells[row, column] = targetCells[row, column] == 0 ? 3 : 4;
-
-        bool hit = targetCells[row, column] == 4;
         Room.SpawnMarkerHitOrMiss(shooter, row, column, hit);
-        
-        if (hit)
-        {            
-            Room.SpawnDeckHit(new Vector3((shooter == Side.Left ? 515 : 395) + (column*10), 0, 145 - (row * 10)));
 
-            if (!AnyAliveDeckAround(targetCells, row, column)) // if that was the last deck
+        if (hit)
+        {
+            if (ThatWasTheLastDeck(targetCells.Clone() as int[,], row, column)) // if that was the last deck
             {
-                // find all decks of that ship
                 int i = row;
                 int j = column;
 
-                if (targetCells[row >= 1 ? row - 1 : row + 1, column] == 4 || targetCells[row <= 8 ? row + 1 : row-1, column] == 4) // vertical ?
+                // check if ship was placed horizontally or vertically                 
+                bool shipWasVertical = (i >= 1 && targetCells[i - 1, j] == 4) || (i <= 8 && targetCells[i + 1, j] == 4);
+                bool shipWasHorizontal = (j >= 1 && targetCells[i, j - 1] == 4) || (j <= 8 && targetCells[i, j + 1] == 4);
+
+
+                // find first from the top/left deck                
+                if (shipWasVertical)
                 {
-                    // find top deck, or go up untill row != 1
-                    while (targetCells[i, j] == 4 && row != 1)
-                    {
-                        if (i > 1) { i--; }
-                        else if (i < 1) { i++; }
-                    }
-
-                    // splash, go down, repeat
-                    while (targetCells[i,j] == 4 && i <= 8)
-                    {
-                        if (j >= 1) // if there are still some cells to the left
-                        {
-                            targetCells[i - 1, j - 1] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i-1, j - 1, false);
-                            
-                            targetCells[i, j - 1] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i, j - 1, false);
-
-                            targetCells[i+1, j - 1] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i+1, j - 1, false);
-                        }                        
-                        if (j <= 8) // if there are still some cells to the right
-                        {
-                            targetCells[i - 1, j + 1] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i - 1, j + 1, false);
-
-                            targetCells[i, j + 1] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i, j + 1, false);
-
-                            targetCells[i, j + 1] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i + 1, j + 1, false);
-                        }
-                        if (targetCells[i-1,j] == 0)
-                        {
-                            targetCells[i - 1, j] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i - 1, j, false);
-                        }
-                        if (targetCells[i + 1, j] == 0)
-                        {
-                            targetCells[i + 1, j] = 3;
-                            Room.SpawnMarkerHitOrMiss(shooter, i + 1, j, false);                            
-                        }
-                    }
-
-                    
-
+                    while (i > 1 && targetCells[i - 1, j] == 4) { i--; }
                 }
-                else if (targetCells[row, column >= 1 ? column - 1 : column + 1] == 4 || targetCells[row, column <= 8 ? column + 1 : column - 1] == 4) // horizontal ?
+                else if (shipWasHorizontal)
                 {
-
+                    while (j > 1 && targetCells[i, j - 1] == 4) { j--; }
                 }
 
+                bool areWeDoneYet = false;
 
-                // splash everything around it
-            }            
+                // repeat for all decks:
+                while (!areWeDoneYet)
+                {
+                    if (i >= 1 && j >= 1 && targetCells[i - 1, j - 1] == 0)
+                    {
+                        targetCells[i - 1, j - 1] = 3; // top left
+                        Room.SpawnMarkerHitOrMiss(shooter, i - 1, j - 1, false);
+                    }
+
+                    if (i >= 1 && targetCells[i - 1, j] == 0)
+                    {
+                        targetCells[i - 1, j] = 3; // top
+                        Room.SpawnMarkerHitOrMiss(shooter, i - 1, j, false);
+                    }
+
+                    if (i >= 1 && j <= 8 && targetCells[i - 1, j + 1] == 0)
+                    {
+                        targetCells[i - 1, j + 1] = 3; // top right     
+                        Room.SpawnMarkerHitOrMiss(shooter, i - 1, j + 1, false);
+                    }
+
+                    if (j <= 8 && targetCells[i, j + 1] == 0)
+                    {
+                        targetCells[i, j + 1] = 3; // right
+                        Room.SpawnMarkerHitOrMiss(shooter, i, j + 1, false);
+                    }
+
+                    if (i <= 8 && j <= 8 && targetCells[i + 1, j + 1] == 0)
+                    {
+                        targetCells[i + 1, j + 1] = 3; // bot right
+                        Room.SpawnMarkerHitOrMiss(shooter, i + 1, j + 1, false);
+                    }
+
+                    if (i <= 8 && targetCells[i + 1, j] == 0)
+                    {
+                        targetCells[i + 1, j] = 3; // bot
+                        Room.SpawnMarkerHitOrMiss(shooter, i + 1, j, false);
+                    }
+
+                    if (i <= 8 && j >= 1 && targetCells[i + 1, j - 1] == 0)
+                    {
+                        targetCells[i + 1, j - 1] = 3; // bot left
+                        Room.SpawnMarkerHitOrMiss(shooter, i + 1, j - 1, false);
+                    }
+
+                    if (j >= 1 && targetCells[i, j - 1] == 0)
+                    {
+                        targetCells[i, j - 1] = 3; // left
+                        Room.SpawnMarkerHitOrMiss(shooter, i, j - 1, false);
+                    }
+
+
+                    if (shipWasVertical && i < 8 && targetCells[i + 1, j] == 4)
+                    {
+                        i++;
+                    }
+                    else if (shipWasHorizontal && j < 8 && targetCells[i, j + 1] == 4)
+                    {
+                        j++;
+                    }
+                    else
+                    {
+                        areWeDoneYet = true;
+                    }
+
+                }
+            }
         }
 
         targetPlacement = "";
-        for (int i = 0; i< 10; i++)
+        for (int i = 0; i < 10; i++)
         {
-            for (int j = 0; j<10; j++)
+            for (int j = 0; j < 10; j++)
             {
                 targetPlacement += targetCells[i, j].ToString();
             }
@@ -329,26 +367,75 @@ public class OnlineGameManager : NetworkBehaviour
         else if (shooter == Side.Right)
         {
             Placement_01 = targetPlacement;
-        }        
-    }
+        }
+    }    
 
     [Server]
-    public bool AnyAliveDeckAround(int[,] targetCells, int row, int column)
+    public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
     {
-        for (int i = (row >= 1) ? row - 1 : row; i < ((row <= 8) ? row + 1 : row); i++)
+        int i = row;
+        int j = column;
+
+        bool shipWasVertical = (i >= 1 && targetCells[i - 1, j] == 4) || (i <= 8 && targetCells[i + 1, j] == 4);
+        bool shipWasHorizontal = (j >= 1 && targetCells[i, j - 1] == 4) || (j <= 8 && targetCells[i, j + 1] == 4);
+
+        // find first from the top/left deck                
+        if (shipWasVertical)
         {
-            for (int j = (column >= 1) ? column - 1 : column; j < ((column <= 8) ? column + 1 : column); j++)
+            while (i > 1 && targetCells[i - 1, j] == 4) { i--; }
+        }
+        else if (shipWasHorizontal)
+        {
+            while (j > 1 && targetCells[i, j - 1] == 4) { j--; }
+        }
+
+        bool areWeDoneYet = false;
+
+        // repeat for all decks:
+        while (!areWeDoneYet)
+        {
+            if (i >= 1 && j >= 1 && targetCells[i - 1, j - 1] == 1)
+                return false;
+
+            if (i >= 1 && targetCells[i - 1, j] == 1)
+                return false;
+
+            if (i >= 1 && j <= 8 && targetCells[i - 1, j + 1] == 1)
+                return false;
+
+            if (j <= 8 && targetCells[i, j + 1] == 1)
+                return false;
+
+            if (i <= 8 && j <= 8 && targetCells[i + 1, j + 1] == 1)
+                return false;
+
+            if (i <= 8 && targetCells[i + 1, j] == 1)
+                return false;
+
+            if (i <= 8 && j >= 1 && targetCells[i + 1, j - 1] == 1)
+                return false;
+
+            if (j >= 1 && targetCells[i, j - 1] == 1)
+                return false;
+
+
+
+            if (shipWasVertical && i < 8 && targetCells[i + 1, j] == 4)
             {
-                if (targetCells[i, j] == 1)
-                {
-                    return true;
-                }
+                i++;
+            }
+            else if (shipWasHorizontal && j < 8 && targetCells[i, j + 1] == 4)
+            {
+                j++;
+            }
+            else
+            {
+                areWeDoneYet = true;
             }
         }
-        return false;
+
+        return true;
     }
-
-
     public void ShootCell(Button contextButton)
     {
         if (WhoseTurn != ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
@@ -359,19 +446,19 @@ public class OnlineGameManager : NetworkBehaviour
         int row = int.Parse(contextButton.gameObject.transform.parent.gameObject.name.Substring(5, 1));
         int column = int.Parse(contextButton.gameObject.name.Substring(6, 1));
         string targetPlacement = WhoseTurn == Side.Left ? Placement_02 : Placement_01;
-        
-        if (targetPlacement[10*row + column] == '3' || targetPlacement[10 * row + column] == '4')
+
+        if (targetPlacement[10 * row + column] == '3' || targetPlacement[10 * row + column] == '4')
         {
             return;
         }
 
         CmdShootAndUpdateCell(WhoseTurn, row, column);
-        //CmdSwitchTurn();
+        CmdSwitchTurn();
     }
 
     [Command(ignoreAuthority = true)]
-    public void CmdSwitchTurn() 
-    { 
+    public void CmdSwitchTurn()
+    {
         WhoseTurn = WhoseTurn == Side.Left ? Side.Right : Side.Left;
         StartCoroutine(UpdateFieldsAfterSeconds(.5f));
     }

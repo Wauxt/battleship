@@ -33,8 +33,8 @@ public class SavePatternSystem : MonoBehaviour
 
             for (i = 0; i < 10; i++)
             {
-                //tr = GameObject.Find("Ship" + i.ToString());
-                tr = shipsGrid.gameObject.transform.GetChild(i).gameObject;
+                tr = shipsGrid.transform.GetChild(i).gameObject;
+
                 data.position[i] = tr.transform.localPosition;
                 data.rotation[i] = tr.transform.localRotation;
             }
@@ -50,10 +50,9 @@ public class SavePatternSystem : MonoBehaviour
         var extensions = new[] {
             new ExtensionFilter("Data", "dat"),
         };
-        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "C:\\Users\\user\\Desktop\\mysave", extensions, false);
+        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "C:\\Users\\user\\Desktop\\", extensions, false);
         if (path.Length!=0)
-        {
-            int i = 0;
+        {            
             BinaryFormatter bf = new BinaryFormatter();
             FileStream file =
             File.Open(path[0], FileMode.Open);
@@ -62,26 +61,30 @@ public class SavePatternSystem : MonoBehaviour
                 SavePattern data = (SavePattern)bf.Deserialize(file);
                 GameObject tr;
                 
-                for (i = 0; i < 10; i++)
-                {
-                    //tr = GameObject.Find("Ship" + i.ToString());
-                    tr = shipsGrid.gameObject.transform.GetChild(i).gameObject;
+                for (int i = 0; i < 10; i++)
+                {                    
+                    tr = shipsGrid.transform.GetChild(i).gameObject;
                     tr.transform.localPosition = new Vector3(data.position[i].x, data.position[i].y, data.position[i].z);
                     tr.transform.localRotation = new Quaternion(0, data.rotation[i].y, 0, data.rotation[i].w);
-                    if (data.position[i].x >= 0)
+                    if (data.position[i].x >= 0 && data.position[i].x <= 9.55f)
                         tr.transform.localScale = new Vector3(1f, 0.4f, 1f);
                     else
                         tr.transform.localScale = new Vector3(0.5f, 0.2f, 0.5f);
                 }
                 if (!PlacementIsLegit())
                 {
-
+                    modalPanel.SetActive(true);
+                    shipsGrid.gameObject.transform.GetChild(0).gameObject.GetComponent<Ship>().DeleteAllShips();
+                }
+                else
+                {
+                    shipsGrid.SwitchReadyState();
                 }
             }
             catch(Exception e)
             {
                 modalPanel.SetActive(true);
-                Debug.LogError(e.Message);
+                Debug.Log(e.StackTrace);
             }
             file.Close();
         }
@@ -98,7 +101,7 @@ public class SavePatternSystem : MonoBehaviour
     {
         for (int i = 0; i < 10; i++)
         {
-            Ship curShip = gameObject.transform.GetChild(i).gameObject.GetComponent<Ship>();
+            Ship curShip = shipsGrid.transform.GetChild(i).gameObject.GetComponent<Ship>();
             for (int j = 0; j < curShip.deckAmount; j++)
             {
                 if (curShip.DeckOverlappsAnyOtherShip(curShip.gameObject.transform.GetChild(j)))
