@@ -48,9 +48,19 @@ public class OnlineGameManager : NetworkBehaviour
     [SerializeField] private GameObject ownCanvas = null;
     [SerializeField] private GameObject opponentCanvas = null;
     [SerializeField] private GameObject sharedCanvas = null;
+
+    [SerializeField] private GameObject overlayHitMarkers = null;
+    [SerializeField] private GameObject overlayEndGame = null;
+
     [SerializeField] private GameObject battlefield = null;
+
     [SerializeField] private TMP_Text ownNameInfo = null;
     [SerializeField] private TMP_Text opponentNameInfo = null;
+
+    [SerializeField] private TMP_Text whoseTurnInfo = null;
+    [SerializeField] private GameObject endGamePanel = null;
+
+    
 
 
 
@@ -67,6 +77,10 @@ public class OnlineGameManager : NetworkBehaviour
     {
         sharedCanvas = GameObject.Find("SharedCanvas");
         sharedCanvas.transform.Find("NameTags").gameObject.SetActive(false);
+
+        overlayHitMarkers = GameObject.Find("MainCamera").transform.Find("Canvas").transform.Find("OverlayHitMarkers").gameObject;
+        overlayEndGame = GameObject.Find("MainCamera").transform.Find("Canvas").transform.Find("OverlayEndGame").gameObject;
+        whoseTurnInfo = GameObject.Find("MainCamera").transform.Find("Canvas").transform.Find("WhoseTurnInfo").gameObject.GetComponent<TMP_Text>();
 
         GameObject.Find("MainCamera").transform.Find("Canvas").transform.Find("Bar").transform.Find("Panel").gameObject.SetActive(false);
 
@@ -158,19 +172,30 @@ public class OnlineGameManager : NetworkBehaviour
         if (whoseTurn == ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
         {
             battlefield.SetActive(opponentGamePlayer.GetComponent<NetworkGamePlayer>().placementIsReady);
+
+            whoseTurnInfo.gameObject.SetActive(true);
+            whoseTurnInfo.text = "<color #ffffff>Ваш ход</color>";
+
+        }
+        else
+        {
+            whoseTurnInfo.gameObject.SetActive(ownGamePlayer.GetComponent<NetworkGamePlayer>().placementIsReady);
+            whoseTurnInfo.text = "<color #999999>Ход соперника</color>";
         }
     }
 
     [ClientRpc]
     public void RpcUpdateBattleFields()
-    {
+    {        
         if (whoseTurn == ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
         {
             battlefield.SetActive(true);
+            whoseTurnInfo.text = "<color #ffffff>Ваш ход</color>";
         }
         else
         {
             battlefield.SetActive(false);
+            whoseTurnInfo.text = "<color #999999>Ход соперника</color>";
         }
     }
     public void GoBackToMainMenu() => Room.IngameDisconnect();
@@ -455,9 +480,40 @@ public class OnlineGameManager : NetworkBehaviour
         {
             return;
         }
-
+        bool hit = targetPlacement[10 * row + column] == '1';
+        
+        CmdTriggerOverlayAnimator(hit);
         CmdShootAndUpdateCell(WhoseTurn, row, column);
-        CmdSwitchTurn();
+
+        if (!hit)
+        {            
+            CmdSwitchTurn();
+        }
+    }
+
+    [Command(ignoreAuthority = true)]
+    public void CmdTriggerOverlayAnimator(bool hit) => RpcTriggerMyOverlayAnimator(hit);
+    
+
+    [ClientRpc]
+    public void RpcTriggerMyOverlayAnimator(bool hit)
+    {
+        Animator animator = overlayHitMarkers.GetComponent<Animator>();
+        if (!hit)
+        {
+            animator.SetTrigger("Miss");            
+        }
+        else
+        {
+            if (ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide == WhoseTurn)
+            {
+                animator.SetTrigger("Hit");
+            }
+            else
+            {
+                animator.SetTrigger("GotHit");
+            }
+        }              
     }
 
     [Command(ignoreAuthority = true)]
