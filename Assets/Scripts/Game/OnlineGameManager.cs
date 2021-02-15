@@ -50,17 +50,14 @@ public class OnlineGameManager : NetworkBehaviour
     [SerializeField] private GameObject sharedCanvas = null;
 
     [SerializeField] private GameObject overlayHitMarkers = null;
-    [SerializeField] private GameObject overlayEndGame = null;
-
-    [SerializeField] private GameObject battlefield = null;
+    [SerializeField] private GameObject overlayEndGame = null;    
 
     [SerializeField] private TMP_Text ownNameInfo = null;
     [SerializeField] private TMP_Text opponentNameInfo = null;
-
     [SerializeField] private TMP_Text whoseTurnInfo = null;
-    [SerializeField] private GameObject endGamePanel = null;
 
     [Header("Game")]
+    [SerializeField] private GameObject battlefield = null;
     [SyncVar] private Side whoseTurn = Side.Default;
     [SyncVar] private string placement_01 = "";
     [SyncVar] private string placement_02 = "";

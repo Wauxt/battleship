@@ -121,13 +121,7 @@ public class SavePatternSystem : MonoBehaviour
             }
             file.Close();
         }
-    }
-
-    public void Modal_Panel() 
-    {
-        //GameObject.Find("Modal Panel").SetActive(false);
-        modalPanel.SetActive(false);
-    }
+    }   
 
     /// <summary>
     public bool PlacementIsLegit()
