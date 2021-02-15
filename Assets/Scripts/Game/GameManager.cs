@@ -19,10 +19,8 @@ public class GameManager : MonoBehaviour
 
     [Header("Players")]
     [SerializeField] private GameObject ownPlayer = null;
-    [SerializeField] private GameObject opponentPlayer = null;
 
     [Header("Terrain")]
-    [SerializeField] private GameObject ownTerrain = null;
     [SerializeField] private GameObject opponentTerrain = null;
 
     [Header("Grids")]
@@ -201,17 +199,17 @@ public class GameManager : MonoBehaviour
         int column = int.Parse(contextButton.gameObject.name.Substring(6, 1));
         string targetPlacement = WhoseTurn == Side.Left ? Placement_02 : Placement_01;
 
-        if (targetPlacement[10 * row + column] == '3' || targetPlacement[10 * row + column] == '4')
-        {
-            return;
-        }
+        //if (targetPlacement[10 * row + column] == '3' || targetPlacement[10 * row + column] == '4')
+        //{
+        //    return;
+        //}
         bool hit = targetPlacement[10 * row + column] == '1';       
                 
         ShootAndUpdateCell(WhoseTurn, row, column);
 
         if (!hit)
         {
-            
+            SwitchTurn();
             UpdateBattleFields();
         }
     }
@@ -224,19 +222,30 @@ public class GameManager : MonoBehaviour
         }
         StartCoroutine(AIshootCellAfterSeconds(1f));
     }
+    public void AIShootAgain() => StartCoroutine(AIshootCellAfterSeconds(1f));
     public IEnumerator AIshootCellAfterSeconds(float count)
     {
         
         yield return new WaitForSeconds(count);
+
         List<int> availableCells = new List<int>();
+                
         for (int i = 0; i < 100; i++)
         {
-            if (placement_01[i] == '0' || placement_01[i] == '1')
+            if (Placement_01[i] == '0' || Placement_01[i] == '1')
             {
                 availableCells.Add(i);
             }
-        }
-        //ShootAndUpdateCell(Side.Right, )
+        }        
+
+        int index = Random.Range(0, availableCells.Count);
+        string indexStr = index.ToString();
+        bool hit = Placement_01[index] == 1;
+
+        int row = indexStr.Length > 1 ? int.Parse(indexStr.Substring(0, 1)) : 0;
+        int column = indexStr.Length > 1 ? int.Parse(indexStr.Substring(1, 1)) : int.Parse(indexStr);
+
+        ShootAndUpdateCell(Side.Right, row, column);        
     }
 
 
@@ -387,7 +396,7 @@ public class GameManager : MonoBehaviour
         else if (shooter == Side.Right)
         {
             Placement_01 = targetPlacement;
-        }
+        }        
 
         if (hitCount_01 == 20)
         {
@@ -396,6 +405,19 @@ public class GameManager : MonoBehaviour
         else if (hitCount_02 == 20)
         {
             StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, .5f));
+        }
+
+        if (shooter == Side.Right)
+        {
+            if (hit)
+            {
+                AIShootAgain();
+            }
+            else
+            {
+                SwitchTurn();
+                UpdateBattleFields();
+            }
         }
     }
     public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
