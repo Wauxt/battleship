@@ -15,9 +15,7 @@ public class GameManager : MonoBehaviour
         Default
     }
 
-    // easy = random  
-    // medium = diagon + coasts
-    // hard = random + diag + coasts
+  
 
     [Header("Players")]
     [SerializeField] private GameObject ownPlayer = null;
@@ -32,9 +30,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject opponentGrid = null;
 
     [Header("UI")]
-    [SerializeField] private GameObject ownCanvas = null; // non overlay canvas
-
-    //[SerializeField] private GameObject opponentCanvas = null;
+    [SerializeField] private GameObject ownCanvas = null;
     [SerializeField] private GameObject sharedCanvas = null;
 
     [SerializeField] private GameObject overlayHitMarkers = null;
@@ -57,29 +53,49 @@ public class GameManager : MonoBehaviour
     private int shotCount_02 = 0;
     private int hitCount_01 = 0;
     private int hitCount_02 = 0;
-
-    //private NetworkManagerBS room;
-    //private NetworkManagerBS Room
-    //{
-    //    get
-    //    {
-    //        if (room != null)
-    //        {
-    //            return room;
-    //        }
-    //        return room = NetworkManager.singleton as NetworkManagerBS;
-    //    }
-    //}
+    
 
     public Side WhoseTurn { get { return whoseTurn; } set { whoseTurn = value; } }
     public string Placement_01 { get { return placement_01; } set { placement_01 = value; } }
     public string Placement_02 { get { return placement_02; } set { placement_02 = value; } }
 
-
-
     public void Start()
     {
-        opponentGrid.GetComponent<ShipsGrid>().AutoPlacement_Random();
+        ShipsGrid aiGrid = opponentGrid.GetComponent<ShipsGrid>();
+        int difficulty = Difficulty.difficultyValue;
+
+        if (difficulty == 0)
+        {
+            aiGrid.AutoPlacement_Random();
+        }
+        else if (difficulty == 1)
+        {
+            int val = Mathf.RoundToInt(Random.value);
+            if (val == 0)
+            {
+                aiGrid.AutoPlacement_Random();
+            }
+            else
+            {
+                aiGrid.AutoPlacement_AntiDiagonal();
+            }
+        }
+        else if (difficulty == 2)
+        {
+            int val = Mathf.RoundToInt(Random.value*2);
+            if (val == 0)
+            {
+                aiGrid.AutoPlacement_Random();
+            }
+            else if (val == 1)
+            {
+                aiGrid.AutoPlacement_AntiDiagonal();
+            }
+            else if (val == 2)
+            {
+                aiGrid.AutoPlacement_Coasts();
+            }
+        }        
     }
 
     public void UpdateBattleFields()
@@ -113,7 +129,7 @@ public class GameManager : MonoBehaviour
         sharedCanvas.transform.Find("NameTags").gameObject.SetActive(true);
         ownNameInfo.text = "<color #ff00ff>" + Authorization.nickname + "</color>";
         opponentNameInfo.text = "<color #ff0000>Противник (" + (Difficulty.difficultyValue == 2 ? "тяжело" : Difficulty.difficultyValue == 1 ? "средне" : "легко") + ")</color>";
-
+        
         string myplacement = "";
         int[,] cells = new int[10, 10];
 
@@ -150,6 +166,8 @@ public class GameManager : MonoBehaviour
         }//// set placements
 
         WhoseTurn = Side.Left;
+        whoseTurnInfo.gameObject.SetActive(true);
+        whoseTurnInfo.text = "<color #ffffff>Ваш ход</color>";
 
         battlefield.SetActive(true);
 
@@ -189,14 +207,40 @@ public class GameManager : MonoBehaviour
         }
         bool hit = targetPlacement[10 * row + column] == '1';       
                 
-        CmdShootAndUpdateCell(WhoseTurn, row, column);
+        ShootAndUpdateCell(WhoseTurn, row, column);
 
-        //if (!hit)
-        //{
-        //    CmdSwitchTurn();
-        //}
-    }    
-    public void CmdShootAndUpdateCell(Side shooter, int row, int column) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
+        if (!hit)
+        {
+            
+            UpdateBattleFields();
+        }
+    }
+    public void SwitchTurn()
+    {
+        WhoseTurn = WhoseTurn == Side.Left ? Side.Right : Side.Left;
+        if (WhoseTurn == Side.Left)
+        {
+            return;
+        }
+        StartCoroutine(AIshootCellAfterSeconds(1f));
+    }
+    public IEnumerator AIshootCellAfterSeconds(float count)
+    {
+        
+        yield return new WaitForSeconds(count);
+        List<int> availableCells = new List<int>();
+        for (int i = 0; i < 100; i++)
+        {
+            if (placement_01[i] == '0' || placement_01[i] == '1')
+            {
+                availableCells.Add(i);
+            }
+        }
+        //ShootAndUpdateCell(Side.Right, )
+    }
+
+
+    public void ShootAndUpdateCell(Side shooter, int row, int column) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
     {
         string targetPlacement = shooter == Side.Left ? Placement_02 : Placement_01;
         int[,] targetCells = new int[10, 10];
@@ -347,11 +391,11 @@ public class GameManager : MonoBehaviour
 
         if (hitCount_01 == 20)
         {
-            StartCoroutine(AnnounceWinnerAfterSeconds(Side.Left, 1f));
+            StartCoroutine(AnnounceWinnerAfterSeconds(Side.Left, .5f));
         }
         else if (hitCount_02 == 20)
         {
-            StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, 1f));
+            StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, .5f));
         }
     }
     public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
