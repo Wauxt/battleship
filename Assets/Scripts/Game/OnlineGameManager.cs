@@ -60,13 +60,17 @@ public class OnlineGameManager : NetworkBehaviour
     [SerializeField] private TMP_Text whoseTurnInfo = null;
     [SerializeField] private GameObject endGamePanel = null;
 
-    
-
-
-
+    [Header("Game")]
     [SyncVar] private Side whoseTurn = Side.Default;
     [SyncVar] private string placement_01 = "";
     [SyncVar] private string placement_02 = "";
+
+    [Header("Stats")]
+    [SyncVar] private int shotCount_01 = 0;
+    [SyncVar] private int shotCount_02 = 0;
+
+    [SyncVar] private int hitCount_01 = 0;
+    [SyncVar] private int hitCount_02 = 0;
 
 
     public Side WhoseTurn { get { return whoseTurn; } set { whoseTurn = value; } }
@@ -186,7 +190,7 @@ public class OnlineGameManager : NetworkBehaviour
 
     [ClientRpc]
     public void RpcUpdateBattleFields()
-    {        
+    {
         if (whoseTurn == ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide)
         {
             battlefield.SetActive(true);
@@ -270,9 +274,9 @@ public class OnlineGameManager : NetworkBehaviour
     [Command(ignoreAuthority = true)]
     public void CmdShootAndUpdateCell(Side shooter, int row, int column) // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! //
     {
-
         string targetPlacement = shooter == Side.Left ? Placement_02 : Placement_01;
         int[,] targetCells = new int[10, 10];
+
 
 
         for (int i = 0; i < 10; i++)
@@ -380,6 +384,24 @@ public class OnlineGameManager : NetworkBehaviour
             }
         }
 
+        // for stat
+        if (shooter == Side.Left)
+        {
+            shotCount_01++;
+            if (hit)
+            {
+                hitCount_01++;
+            }
+        }
+        else if (shooter == Side.Right)
+        {
+            shotCount_02++;
+            if (hit)
+            {
+                hitCount_02++;
+            }
+        }
+
         targetPlacement = "";
         for (int i = 0; i < 10; i++)
         {
@@ -397,7 +419,16 @@ public class OnlineGameManager : NetworkBehaviour
         {
             Placement_01 = targetPlacement;
         }
-    }    
+
+        if (hitCount_01 == 20)
+        {
+            StartCoroutine(AnnounceWinnerAfterSeconds(Side.Left, 1f));
+        }
+        else if (hitCount_02 == 20)
+        {
+            StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, 1f));
+        }
+    }
 
     [Server]
     public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
@@ -481,19 +512,20 @@ public class OnlineGameManager : NetworkBehaviour
             return;
         }
         bool hit = targetPlacement[10 * row + column] == '1';
-        
+
+
         CmdTriggerOverlayAnimator(hit);
         CmdShootAndUpdateCell(WhoseTurn, row, column);
 
         if (!hit)
-        {            
+        {
             CmdSwitchTurn();
         }
     }
 
     [Command(ignoreAuthority = true)]
     public void CmdTriggerOverlayAnimator(bool hit) => RpcTriggerMyOverlayAnimator(hit);
-    
+
 
     [ClientRpc]
     public void RpcTriggerMyOverlayAnimator(bool hit)
@@ -501,7 +533,7 @@ public class OnlineGameManager : NetworkBehaviour
         Animator animator = overlayHitMarkers.GetComponent<Animator>();
         if (!hit)
         {
-            animator.SetTrigger("Miss");            
+            animator.SetTrigger("Miss");
         }
         else
         {
@@ -513,7 +545,7 @@ public class OnlineGameManager : NetworkBehaviour
             {
                 animator.SetTrigger("GotHit");
             }
-        }              
+        }
     }
 
     [Command(ignoreAuthority = true)]
@@ -527,5 +559,54 @@ public class OnlineGameManager : NetworkBehaviour
     {
         yield return new WaitForSeconds(count);
         RpcUpdateBattleFields();
+    }
+
+    [ClientRpc]
+    public void RpcAnnounceWinner(Side winner)
+    {
+        overlayEndGame.SetActive(true);
+        overlayEndGame.GetComponent<Animator>().SetTrigger("GameEnded");
+
+        NetworkGamePlayer ownGP = ownGamePlayer.GetComponent<NetworkGamePlayer>();
+        NetworkGamePlayer oppGP = opponentGamePlayer.GetComponent<NetworkGamePlayer>();
+
+        TMP_Text winloose = overlayEndGame.transform.Find("Panel").transform.Find("WinLoose").GetComponent<TMP_Text>();
+        TMP_Text name_01 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Name_01").GetComponent<TMP_Text>();
+        TMP_Text name_02 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Name_02").GetComponent<TMP_Text>();
+        TMP_Text acc_01 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Acc_01").GetComponent<TMP_Text>();
+        TMP_Text acc_02 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Acc_02").GetComponent<TMP_Text>();
+
+        float accuracy_01 = shotCount_01 > 0 ? (float)hitCount_01 * 100 / (float)shotCount_01 : 0;
+        float accuracy_02 = shotCount_02 > 0 ? (float)hitCount_02 * 100 / (float)shotCount_02 : 0;
+
+        if (ownGP.mySide == winner)
+        {
+            winloose.text = "<color #ffffff>Победа</color>";
+        }
+        else
+        {
+            winloose.text = "<color #ffffff>Поражение</color>";
+        }
+
+        acc_01.text = accuracy_01.ToString("0.000") + "%";
+        acc_02.text = accuracy_02.ToString("0.000") + "%";
+
+        if (ownGP.mySide == Side.Left)
+        {
+            name_01.text = ownGP.displayName;
+            name_02.text = oppGP.displayName;
+            
+        }
+        else if (ownGP.mySide == Side.Right)
+        {
+            name_01.text = oppGP.displayName;
+            name_02.text = ownGP.displayName;
+        }
+    }
+
+    private IEnumerator AnnounceWinnerAfterSeconds(Side winner, float count)
+    {
+        yield return new WaitForSeconds(count);
+        RpcAnnounceWinner(winner);
     }
 }
