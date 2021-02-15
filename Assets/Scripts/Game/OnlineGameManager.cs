@@ -429,6 +429,8 @@ public class OnlineGameManager : NetworkBehaviour
             StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, 1f));
         }
     }
+    [ClientRpc]
+    public void RpcDisableBattlefield() => battlefield.SetActive(false);
 
     [Server]
     public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
@@ -571,6 +573,7 @@ public class OnlineGameManager : NetworkBehaviour
         NetworkGamePlayer oppGP = opponentGamePlayer.GetComponent<NetworkGamePlayer>();
 
         TMP_Text winloose = overlayEndGame.transform.Find("Panel").transform.Find("WinLoose").GetComponent<TMP_Text>();
+        Image winlooseBackground = overlayEndGame.transform.Find("Panel").transform.Find("WinLooseBackground").GetComponent<Image>();
         TMP_Text name_01 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Name_01").GetComponent<TMP_Text>();
         TMP_Text name_02 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Name_02").GetComponent<TMP_Text>();
         TMP_Text acc_01 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Acc_01").GetComponent<TMP_Text>();
@@ -582,10 +585,12 @@ public class OnlineGameManager : NetworkBehaviour
         if (ownGP.mySide == winner)
         {
             winloose.text = "<color #ffffff>Победа</color>";
+            winlooseBackground.color = new Color(0f, 160f/255f, 50f/255f, 30f/255f);
         }
         else
         {
             winloose.text = "<color #ffffff>Поражение</color>";
+            winlooseBackground.color = new Color(160f/255f, 10f/255f, 0f, 30f/255f);
         }
 
         acc_01.text = accuracy_01.ToString("0.000") + "%";
@@ -606,6 +611,7 @@ public class OnlineGameManager : NetworkBehaviour
 
     private IEnumerator AnnounceWinnerAfterSeconds(Side winner, float count)
     {
+        RpcDisableBattlefield();
         yield return new WaitForSeconds(count);
         RpcAnnounceWinner(winner);
     }
