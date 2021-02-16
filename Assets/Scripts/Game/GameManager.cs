@@ -229,17 +229,16 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(count);
 
         List<int> availableCells = new List<int>();
-                
         for (int i = 0; i < 100; i++)
         {
             if (Placement_01[i] == '0' || Placement_01[i] == '1')
             {
                 availableCells.Add(i);
             }
-        }        
+        }
 
-        int index = Random.Range(0, availableCells.Count);
-        string indexStr = index.ToString();
+        int index = availableCells[Random.Range(0, availableCells.Count)];//туть брал значение индекса,
+        string indexStr = index.ToString();                               //а не значение из листа
         bool hit = Placement_01[index] == 1;
 
         int row = indexStr.Length > 1 ? int.Parse(indexStr.Substring(0, 1)) : 0;
