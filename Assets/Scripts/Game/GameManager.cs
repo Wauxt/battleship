@@ -14,8 +14,12 @@ public class GameManager : MonoBehaviour
         Right,
         Default
     }
-
-  
+    public enum Tactic
+    {
+        Random,
+        Diagonal,
+        FastCarrier
+    }
 
     [Header("Players")]
     [SerializeField] private GameObject ownPlayer = null;
@@ -30,14 +34,11 @@ public class GameManager : MonoBehaviour
     [Header("UI")]
     [SerializeField] private GameObject ownCanvas = null;
     [SerializeField] private GameObject sharedCanvas = null;
-
     [SerializeField] private GameObject overlayHitMarkers = null;
     [SerializeField] private GameObject overlayEndGame = null;
-
     [SerializeField] private TMP_Text ownNameInfo = null;
     [SerializeField] private TMP_Text opponentNameInfo = null;
     [SerializeField] private TMP_Text whoseTurnInfo = null;
-
 
     [Header("Game")]
     [SerializeField] private GameObject battlefield = null;
@@ -50,6 +51,7 @@ public class GameManager : MonoBehaviour
     private int hitCount_02 = 0;
 
     [Header("AI stuff")]
+    private Tactic aiTactic = Tactic.Random;
     private int firstHitIndex = -1;
     private int lastHitIndex = -1;
     private bool shipThatWasHitIsHorizontal = false;
@@ -58,46 +60,51 @@ public class GameManager : MonoBehaviour
     public Side WhoseTurn { get; set; } = Side.Default;
     public string Placement_01 { get; set; } = "";
     public string Placement_02 { get; set; } = "";
-
-    public void Start()
+    public void GoBackToMainMenu() => SceneManager.LoadScene("Menu");
+    public void Start() // AI difficulty => ship placement + tactic
     {
         ShipsGrid aiGrid = opponentGrid.GetComponent<ShipsGrid>();
         int difficulty = Difficulty.difficultyValue;
+        int medium = Random.Range(0, 2);
+        int hard = Random.Range(0, 3);
 
-        if (difficulty == 0)
+        switch (difficulty)
         {
-            aiGrid.AutoPlacement_Random();
-        }
-        else if (difficulty == 1)
-        {
-            int val = Mathf.RoundToInt(Random.value);
-            if (val == 0)
-            {
+            case 0:
+                aiTactic = (Tactic)0;
                 aiGrid.AutoPlacement_Random();
-            }
-            else
-            {
-                aiGrid.AutoPlacement_AntiDiagonal();
-            }
+                break;
+            case 1:                
+                aiTactic = (Tactic)1; // DEBUG
+                //aiTactic = (Tactic)Random.Range(0, 2); 
+                switch (medium)
+                {
+                    case 0:
+                        aiGrid.AutoPlacement_Random();
+                        break;
+                    case 1:
+                        aiGrid.AutoPlacement_AntiDiagonal();
+                        break;
+                }
+                break;
+            case 2:
+                aiTactic = (Tactic)2; // DEBUG
+                //aiTactic = (Tactic)Random.Range(1, 3);
+                switch (hard)
+                {
+                    case 0:
+                        aiGrid.AutoPlacement_Random();
+                        break;
+                    case 1:
+                        aiGrid.AutoPlacement_AntiDiagonal();
+                        break;
+                    case 2:
+                        aiGrid.AutoPlacement_Coasts();
+                        break;
+                }
+                break;
         }
-        else if (difficulty == 2)
-        {
-            int val = Mathf.RoundToInt(Random.value*2);
-            if (val == 0)
-            {
-                aiGrid.AutoPlacement_Random();
-            }
-            else if (val == 1)
-            {
-                aiGrid.AutoPlacement_AntiDiagonal();
-            }
-            else if (val == 2)
-            {
-                aiGrid.AutoPlacement_Coasts();
-            }
-        }        
     }
-
     public void UpdateBattleFields()
     {
         if (WhoseTurn == Side.Left)
@@ -111,7 +118,6 @@ public class GameManager : MonoBehaviour
             whoseTurnInfo.text = "<color #999999>Ход соперника</color>";
         }
     }
-    public void GoBackToMainMenu() => SceneManager.LoadScene("Menu");
     public void ReadyToBattle()
     {
         sharedCanvas.transform.Find("Coords").Find("Left").gameObject.SetActive(true);
@@ -129,7 +135,7 @@ public class GameManager : MonoBehaviour
         sharedCanvas.transform.Find("NameTags").gameObject.SetActive(true);
         ownNameInfo.text = "<color #ff00ff>" + Authorization.nickname + "</color>";
         opponentNameInfo.text = "<color #ff0000>Противник (" + (Difficulty.difficultyValue == 2 ? "тяжело" : Difficulty.difficultyValue == 1 ? "средне" : "легко") + ")</color>";
-        
+
         string myplacement = "";
         int[,] cells = new int[10, 10];
 
@@ -173,8 +179,7 @@ public class GameManager : MonoBehaviour
 
         StartCoroutine(PlayerLerpToCenter());
     }
-
-    private IEnumerator PlayerLerpToCenter()
+    private IEnumerator PlayerLerpToCenter() // move camera, change its fov
     {
         Vector3 startPos = ownPlayer.transform.localPosition;
         Vector3 endPos = new Vector3(500f, 120f, 110f);
@@ -189,8 +194,7 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
     }
-
-    public void ShootCell(Button contextButton)
+    public void ShootCell(Button contextButton) // player shoot call from cell's button on canvas
     {
         if (WhoseTurn != Side.Left)
         {
@@ -206,8 +210,8 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        bool hit = targetPlacement[10 * row + column] == '1';       
-                
+        bool hit = targetPlacement[10 * row + column] == '1';
+
         ShootAndUpdateCell(WhoseTurn, row, column);
 
         if (!hit)
@@ -216,31 +220,51 @@ public class GameManager : MonoBehaviour
             UpdateBattleFields();
         }
     }
-    public void SwitchTurn()
+    public void SwitchTurn() // End turn, start AI turn coroutine if WhoseTurn got changed to Side.Right
     {
         WhoseTurn = WhoseTurn == Side.Left ? Side.Right : Side.Left;
         if (WhoseTurn == Side.Right)
         {
             StartCoroutine(AITurnCoroutine(1f));
         }
-    }    
-    public IEnumerator AITurnCoroutine(float count) ////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    {        
+    }
+
+
+    public IEnumerator AITurnCoroutine(float count) // -------------- AI LOGIC --------------
+    {
         bool miss = false;
         while (!miss && hitCount_02 < 20)
         {
-
+            int index;
             yield return new WaitForSeconds(count);
-            
-            int index = AIChooseCell_Random();
+
+            if (lastHitIndex >= 0) // if there is a ship that we need to finish
+            {
+                index = AIChooseCell_FinishShip();                
+            }
+            else
+            {
+                if (aiTactic == Tactic.Random)
+                    index = AIChooseCell_Random();
+                else if (aiTactic == Tactic.Diagonal)
+                    index = AIChooseCell_Diagonal();
+                else
+                    index = AIChooseCell_FastCarrier();                       
+            }
 
             int row = index / 10;
-            int column = index % 10;            
+            int column = index % 10;
 
             if (Placement_01[index] == '0')
             {
-                //miss = true;                
-            }            
+                miss = true;   // DEBUG: DONT END AI'S TURN             
+            }
+            else if (Placement_01[index] == '1')
+            {
+                if (firstHitIndex == -1)
+                    firstHitIndex = index;
+                lastHitIndex = index;
+            }
 
             ShootAndUpdateCell(Side.Right, row, column);
         }
@@ -250,9 +274,135 @@ public class GameManager : MonoBehaviour
             SwitchTurn();
             UpdateBattleFields();
         }
-        
-    }
 
+    }
+    public int AIChooseCell_FinishShip()
+    {
+        int index;
+
+        int lastHitRow = lastHitIndex / 10;
+        int lastHitColumn = lastHitIndex % 10;
+
+        int[,] targetCells = new int[10, 10];
+
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
+            {
+                targetCells[i, j] = int.Parse(Placement_01[i * 10 + j].ToString());
+            }
+        }
+
+        if (firstHitIndex == lastHitIndex)
+        {
+            int i = lastHitRow;
+            int j = lastHitColumn;
+
+            List<Vector2Int> Directions = new List<Vector2Int>();
+
+            if (i >= 1 && targetCells[i - 1, j] != 3) // can we go up ?
+            {
+                Directions.Add(new Vector2Int(i - 1, j));
+            }
+            if (j >= 1 && targetCells[i, j - 1] != 3) // can we go left ?
+            {
+                Directions.Add(new Vector2Int(i, j - 1));
+            }
+            if (i <= 8 && targetCells[i + 1, j] != 3) // can we go down ?
+            {
+                Directions.Add(new Vector2Int(i + 1, j));
+            }
+            if (j <= 8 && targetCells[i, j + 1] != 3) // can we go right ?
+            {
+                Directions.Add(new Vector2Int(i, j + 1));
+            }
+
+            int d = Random.Range(0, Directions.Count); // choose one direction
+
+            index = Directions[d].x * 10 + Directions[d].y;
+        }
+        else
+        {
+            int i = lastHitRow;
+            int j = lastHitColumn;
+
+            // what is the ship's orientation?
+            shipThatWasHitIsVertical = (i >= 1 && targetCells[i - 1, j] == 4) || (i <= 8 && targetCells[i + 1, j] == 4);
+            shipThatWasHitIsHorizontal = (j >= 1 && targetCells[i, j - 1] == 4) || (j <= 8 && targetCells[i, j + 1] == 4);
+
+            List<Vector2Int> Directions = new List<Vector2Int>();
+
+            if (shipThatWasHitIsHorizontal)
+            {
+                if (j >= 1) //can we go left ?
+                {
+                    if ((targetCells[i, j - 1] == 0) || (targetCells[i, j - 1] == 1))
+                    {
+                        Directions.Add(new Vector2Int(i, j - 1));
+                    }
+                }
+                if (j <= 8) // can we go right ?
+                {
+                    if ((targetCells[i, j + 1] == 0) || (targetCells[i, j + 1] == 1))
+                    {
+                        Directions.Add(new Vector2Int(i, j + 1));
+                    }
+                }
+            }
+            else if (shipThatWasHitIsVertical)
+            {
+                if (i >= 1) // can we go up ?
+                {
+                    if (targetCells[i - 1, j] == 0 || targetCells[i - 1, j] == 1)
+                    {
+                        Directions.Add(new Vector2Int(i - 1, j));
+                    }
+                }
+                if (i <= 8) // can we go down ?
+                {
+                    if (targetCells[i + 1, j] == 0 || targetCells[i + 1, j] == 1)
+                    {
+                        Directions.Add(new Vector2Int(i + 1, j));
+                    }
+                }
+            }
+
+            if (Directions.Count == 0) // if we stuck => go back to firstHitindex
+            {
+                i = firstHitIndex / 10;
+                j = firstHitIndex % 10;
+
+                if (shipThatWasHitIsHorizontal)
+                {
+                    if (j >= 1 && (targetCells[i, j - 1] == 0) || (targetCells[i, j - 1] == 1)) // can we go left ?
+                    {
+                        Directions.Add(new Vector2Int(i, j - 1));
+                    }
+                    if (j <= 8 && (targetCells[i, j + 1] == 0) || (targetCells[i, j + 1] == 1)) // can we go right ?
+                    {
+                        Directions.Add(new Vector2Int(i, j + 1));
+                    }
+                }
+                else if (shipThatWasHitIsVertical)
+                {
+                    if (i >= 1 && (targetCells[i - 1, j] == 0 || targetCells[i - 1, j] == 1)) // can we go up ?
+                    {
+                        Directions.Add(new Vector2Int(i - 1, j));
+                    }
+                    if (i <= 8 && (targetCells[i + 1, j] == 0 || targetCells[i + 1, j] == 1)) // can we go down ?
+                    {
+                        Directions.Add(new Vector2Int(i + 1, j));
+                    }
+                }
+            }
+
+            int d = Random.Range(0, Directions.Count); // choose one direction
+
+            index = Directions[d].x * 10 + Directions[d].y;
+        }
+
+        return index;
+    }
     public int AIChooseCell_Random()
     {
         List<int> availableCells = new List<int>();
@@ -266,8 +416,90 @@ public class GameManager : MonoBehaviour
         int index = availableCells[Random.Range(0, availableCells.Count)];
         availableCells.Clear();
 
+        return index;
+    }
+    public int AIChooseCell_Diagonal()
+    {
+        List<Vector2Int> diagonalCells = new List<Vector2Int>();
+        for (int i = 0; i < 10; i++)
+        {
+            if (Placement_01[i * 10 + i] == '0' || Placement_01[i * 10 + i] == '1')
+            {
+                diagonalCells.Add(new Vector2Int(i, i));
+            }
+            if (Placement_01[i * 10 + 9 - i] == '0' || Placement_01[i * 10 + 9 - i] == '1')
+            {
+                diagonalCells.Add(new Vector2Int(i, 9 - i));
+            }
+        }
 
-        return index;       
+        if (diagonalCells.Count == 0)
+        {
+            return AIChooseCell_Random();
+        }
+        else
+        {
+            int d = Random.Range(0, diagonalCells.Count);
+            return diagonalCells[d].x * 10 + diagonalCells[d].y;
+        }
+    }
+    public int AIChooseCell_FastCarrier()
+    {
+        List<Vector2Int> gooseFeetCells = new List<Vector2Int>();
+        for (int i = 0; i < 10; i++)
+        {            
+            int col1;
+            int col2;
+            int col3 = 10;
+
+            if (i % 4 == 0)
+            {
+                col1 = 3;
+                col2 = 7;
+            }
+            else if (i % 4 == 1)
+            {
+                col1 = 2;
+                col2 = 6;
+            }
+            else if (i % 4 == 2)
+            {
+                col1 = 0;
+                col2 = 4;
+                col3 = 8;
+            }
+            else
+            {
+                col1 = 1;
+                col2 = 5;
+                col3 = 9;
+            }
+
+            if (Placement_01[i * 10 + col1] == '0' || Placement_01[i * 10 + col1] == '1')
+            {
+                gooseFeetCells.Add(new Vector2Int(i, col1));
+            }
+            if (Placement_01[i * 10 + col2] == '0' || Placement_01[i * 10 + col2] == '1')
+            {
+                gooseFeetCells.Add(new Vector2Int(i, col2));
+            }
+            if (col3 < 10)
+            {
+                if (Placement_01[i * 10 + col3] == '0' || Placement_01[i * 10 + col3] == '1')
+                {
+                    gooseFeetCells.Add(new Vector2Int(i, col3));
+                }
+            }
+        }
+        if (gooseFeetCells.Count == 0)
+        {
+            return AIChooseCell_Random();
+        }
+        else
+        {
+            int d = Random.Range(0, gooseFeetCells.Count);
+            return gooseFeetCells[d].x * 10 + gooseFeetCells[d].y;
+        }
     }
 
 
@@ -291,7 +523,7 @@ public class GameManager : MonoBehaviour
 
         SpawnMarkerHitOrMiss(shooter, row, column, hit);
 
-        if (hit) 
+        if (hit)
         {
             if (ThatWasTheLastDeck(targetCells.Clone() as int[,], row, column)) // if that was the last deck
             {
@@ -380,6 +612,15 @@ public class GameManager : MonoBehaviour
                         areWeDoneYet = true;
                     }
 
+                    // AI CHECK
+                    if (shooter == Side.Right)
+                    {
+                        shipThatWasHitIsHorizontal = false;
+                        shipThatWasHitIsVertical = false;
+                        firstHitIndex = -1;
+                        lastHitIndex = -1;
+                    }
+
                 }
             }
         }// update targetCells[]
@@ -418,7 +659,7 @@ public class GameManager : MonoBehaviour
         else if (shooter == Side.Right)
         {
             Placement_01 = targetPlacement;
-        }        
+        }
 
         if (hitCount_01 == 20)
         {
@@ -427,7 +668,7 @@ public class GameManager : MonoBehaviour
         else if (hitCount_02 == 20)
         {
             StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, .5f));
-        }        
+        }
     }
     public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
     {

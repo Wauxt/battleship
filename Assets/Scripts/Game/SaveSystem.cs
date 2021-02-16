@@ -7,26 +7,10 @@ using UnityEngine.SceneManagement;
 using SFB;
 using Mirror;
 
-public class SavePatternSystem : MonoBehaviour
+public class SaveSystem : MonoBehaviour
 {
-    [SerializeField]
-    private GameObject modalPanel = null;
-
-    [SerializeField]
-    private ShipsGrid shipsGrid = null;
-
-    private NetworkManagerBS room;
-    private NetworkManagerBS Room
-    {
-        get
-        {
-            if (room != null)
-            {
-                return room;
-            }
-            return room = NetworkManager.singleton as NetworkManagerBS;
-        }
-    }
+    [SerializeField] private GameObject modalPanel = null;
+    [SerializeField] private ShipsGrid shipsGrid = null;    
 
     public void Start()
     {
@@ -47,7 +31,7 @@ public class SavePatternSystem : MonoBehaviour
         }
     }
 
-    public void Save()
+    public void SavePattern()
     {
         int i = 0;
         BinaryFormatter bf = new BinaryFormatter();
@@ -59,7 +43,7 @@ public class SavePatternSystem : MonoBehaviour
         if (path.Length != 0)
         {
             FileStream file = File.Create(path);
-            SavePattern data = new SavePattern();
+            Pattern data = new Pattern();
             data.position[i] = new SVector3();
             data.rotation[i] = new SQuaternion();
             GameObject tr;
@@ -75,10 +59,10 @@ public class SavePatternSystem : MonoBehaviour
             file.Close();
 
         }
-        Debug.Log("Game data saved!");        
+        Debug.Log("Game data saved!");          
     }
 
-    public void Load()
+    public void LoadPattern()
     {
         var extensions = new[] {
             new ExtensionFilter("Data", "dat"),
@@ -91,7 +75,7 @@ public class SavePatternSystem : MonoBehaviour
             File.Open(path[0], FileMode.Open);
             try
             {
-                SavePattern data = (SavePattern)bf.Deserialize(file);
+                Pattern data = (Pattern)bf.Deserialize(file);
                 GameObject tr;
                 
                 for (int i = 0; i < 10; i++)
@@ -143,12 +127,12 @@ public class SavePatternSystem : MonoBehaviour
     /// </summary>
 
     [Serializable]
-    class SavePattern
+    class Pattern
     {
         public SVector3[] position;
         public SQuaternion[] rotation;
 
-        public SavePattern()
+        public Pattern()
         {
             position = new SVector3[10];
             rotation = new SQuaternion[10];

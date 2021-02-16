@@ -7202,11 +7202,10 @@ MonoBehaviour:
   sharedCanvas: {fileID: 0}
   overlayHitMarkers: {fileID: 0}
   overlayEndGame: {fileID: 0}
-  battlefield: {fileID: 0}
   ownNameInfo: {fileID: 0}
   opponentNameInfo: {fileID: 0}
   whoseTurnInfo: {fileID: 0}
-  endGamePanel: {fileID: 0}
+  battlefield: {fileID: 0}
 --- !u!1001 &968506274
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -16746,7 +16745,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 965448827}
-        m_MethodName: Load
+        m_MethodName: LoadPattern
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -17519,7 +17518,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 965448827}
-        m_MethodName: Save
+        m_MethodName: SavePattern
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -18008,7 +18007,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 965448827}
-        m_MethodName: Load
+        m_MethodName: LoadPattern
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -18462,7 +18461,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 965448827}
-        m_MethodName: Save
+        m_MethodName: SavePattern
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
