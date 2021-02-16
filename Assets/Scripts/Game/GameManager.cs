@@ -266,6 +266,7 @@ public class GameManager : MonoBehaviour
         int index = availableCells[Random.Range(0, availableCells.Count)];
         availableCells.Clear();
 
+
         return index;       
     }
 
