@@ -44,18 +44,20 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject hitDeckPrefab = null;
     [SerializeField] private GameObject missSplashPrefab = null;
 
-    private Side whoseTurn = Side.Default;
-    private string placement_01 = "";
-    private string placement_02 = "";
     private int shotCount_01 = 0;
     private int shotCount_02 = 0;
     private int hitCount_01 = 0;
     private int hitCount_02 = 0;
-    
 
-    public Side WhoseTurn { get { return whoseTurn; } set { whoseTurn = value; } }
-    public string Placement_01 { get { return placement_01; } set { placement_01 = value; } }
-    public string Placement_02 { get { return placement_02; } set { placement_02 = value; } }
+    [Header("AI stuff")]
+    private int firstHitIndex = -1;
+    private int lastHitIndex = -1;
+    private bool shipThatWasHitIsHorizontal = false;
+    private bool shipThatWasHitIsVertical = false;
+
+    public Side WhoseTurn { get; set; } = Side.Default;
+    public string Placement_01 { get; set; } = "";
+    public string Placement_02 { get; set; } = "";
 
     public void Start()
     {
@@ -199,10 +201,11 @@ public class GameManager : MonoBehaviour
         int column = int.Parse(contextButton.gameObject.name.Substring(6, 1));
         string targetPlacement = WhoseTurn == Side.Left ? Placement_02 : Placement_01;
 
-        //if (targetPlacement[10 * row + column] == '3' || targetPlacement[10 * row + column] == '4')
-        //{
-        //    return;
-        //}
+        if (targetPlacement[10 * row + column] == '3' || targetPlacement[10 * row + column] == '4')
+        {
+            return;
+        }
+
         bool hit = targetPlacement[10 * row + column] == '1';       
                 
         ShootAndUpdateCell(WhoseTurn, row, column);
@@ -216,36 +219,54 @@ public class GameManager : MonoBehaviour
     public void SwitchTurn()
     {
         WhoseTurn = WhoseTurn == Side.Left ? Side.Right : Side.Left;
-        if (WhoseTurn == Side.Left)
+        if (WhoseTurn == Side.Right)
         {
-            return;
+            StartCoroutine(AITurnCoroutine(1f));
         }
-        StartCoroutine(AIshootCellAfterSeconds(1f));
-    }
-    public void AIShootAgain() => StartCoroutine(AIshootCellAfterSeconds(1f));
-    public IEnumerator AIshootCellAfterSeconds(float count)
-    {
-        
-        yield return new WaitForSeconds(count);
+    }    
+    public IEnumerator AITurnCoroutine(float count) ////////////////!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    {        
+        bool miss = false;
+        while (!miss && hitCount_02 < 20)
+        {
 
+            yield return new WaitForSeconds(count);
+            
+            int index = AIChooseCell_Random();
+
+            int row = index / 10;
+            int column = index % 10;            
+
+            if (Placement_01[index] == '0')
+            {
+                //miss = true;                
+            }            
+
+            ShootAndUpdateCell(Side.Right, row, column);
+        }
+        if (hitCount_02 != 20)
+        {
+            yield return new WaitForSeconds(.5f);
+            SwitchTurn();
+            UpdateBattleFields();
+        }
+        
+    }
+
+    public int AIChooseCell_Random()
+    {
         List<int> availableCells = new List<int>();
-                
         for (int i = 0; i < 100; i++)
         {
             if (Placement_01[i] == '0' || Placement_01[i] == '1')
             {
                 availableCells.Add(i);
             }
-        }        
+        }
+        int index = availableCells[Random.Range(0, availableCells.Count)];
+        availableCells.Clear();
 
-        int index = Random.Range(0, availableCells.Count);
-        string indexStr = index.ToString();
-        bool hit = Placement_01[index] == 1;
-
-        int row = indexStr.Length > 1 ? int.Parse(indexStr.Substring(0, 1)) : 0;
-        int column = indexStr.Length > 1 ? int.Parse(indexStr.Substring(1, 1)) : int.Parse(indexStr);
-
-        ShootAndUpdateCell(Side.Right, row, column);        
+        return index;       
     }
 
 
@@ -269,7 +290,7 @@ public class GameManager : MonoBehaviour
 
         SpawnMarkerHitOrMiss(shooter, row, column, hit);
 
-        if (hit)
+        if (hit) 
         {
             if (ThatWasTheLastDeck(targetCells.Clone() as int[,], row, column)) // if that was the last deck
             {
@@ -360,7 +381,7 @@ public class GameManager : MonoBehaviour
 
                 }
             }
-        }
+        }// update targetCells[]
 
         // for stat
         if (shooter == Side.Left)
@@ -380,7 +401,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        targetPlacement = "";
+        targetPlacement = ""; // set placement string with targetCells elements
         for (int i = 0; i < 10; i++)
         {
             for (int j = 0; j < 10; j++)
@@ -405,20 +426,7 @@ public class GameManager : MonoBehaviour
         else if (hitCount_02 == 20)
         {
             StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, .5f));
-        }
-
-        if (shooter == Side.Right)
-        {
-            if (hit)
-            {
-                AIShootAgain();
-            }
-            else
-            {
-                SwitchTurn();
-                UpdateBattleFields();
-            }
-        }
+        }        
     }
     public bool ThatWasTheLastDeck(int[,] targetCells, int row, int column)
     {
@@ -487,8 +495,9 @@ public class GameManager : MonoBehaviour
     }
     public void SpawnMarkerHitOrMiss(Side shooter, int row, int column, bool hit)
     {
+        Transform parent = shooter == Side.Left ? GameObject.Find("Hitmarkers_01").transform : GameObject.Find("Hitmarkers_02").transform;
         Vector3 position = new Vector3((shooter == Side.Left ? 515 : 395) + (column * 10), 0, 145 - (row * 10));
-        GameObject marker = hit ? Instantiate(hitDeckPrefab) : Instantiate(missSplashPrefab);
+        GameObject marker = hit ? Instantiate(hitDeckPrefab, parent) : Instantiate(missSplashPrefab, parent);
         marker.transform.position = position;
     }
     private IEnumerator AnnounceWinnerAfterSeconds(Side winner, float count)
