@@ -68,42 +68,43 @@ public class GameManager : MonoBehaviour
         int medium = Random.Range(0, 2);
         int hard = Random.Range(0, 3);
 
-        switch (difficulty)
+        if (difficulty == 0)
         {
-            case 0:
-                aiTactic = (Tactic)0;
+            aiTactic = (Tactic)0;
+            aiGrid.AutoPlacement_Random();
+        }
+        else if (difficulty == 1)
+        {
+            aiTactic = (Tactic)1; // DEBUG
+            //aiTactic = (Tactic)Random.Range(0, 2); 
+            if (medium == 0)
+            {
+                aiGrid.AutoPlacement_AntiDiagonal();
+            }
+            else
+            {
+                aiGrid.AutoPlacement_Coasts();
+            }
+        }
+        else
+        {
+            aiTactic = (Tactic)2; // DEBUG
+            //aiTactic = (Tactic)Random.Range(1, 3);
+
+            if (hard == 0)
+            {
                 aiGrid.AutoPlacement_Random();
-                break;
-            case 1:
-                aiTactic = (Tactic)1; // DEBUG
-                //aiTactic = (Tactic)Random.Range(0, 2); 
-                switch (medium)
-                {
-                    case 0:
-                        aiGrid.AutoPlacement_Random();
-                        break;
-                    case 1:
-                        aiGrid.AutoPlacement_AntiDiagonal();
-                        break;
-                }
-                break;
-            case 2:
-                aiTactic = (Tactic)2; // DEBUG
-                //aiTactic = (Tactic)Random.Range(1, 3);
-                switch (hard)
-                {
-                    case 0:
-                        aiGrid.AutoPlacement_Random();
-                        break;
-                    case 1:
-                        aiGrid.AutoPlacement_AntiDiagonal();
-                        break;
-                    case 2:
-                        aiGrid.AutoPlacement_Coasts();
-                        break;
-                }
-                break;
-        }        
+            }
+            else if (hard == 1)
+            {
+                aiGrid.AutoPlacement_AntiDiagonal();
+            }
+            else
+            {
+                aiGrid.AutoPlacement_Coasts();
+            }
+        }
+                        
         opponentTerrain.gameObject.SetActive(false);
 
         foreach (Transform child in opponentGrid.transform)
