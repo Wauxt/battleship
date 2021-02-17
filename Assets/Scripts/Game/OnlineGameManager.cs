@@ -73,6 +73,7 @@ public class OnlineGameManager : NetworkBehaviour
     public Side WhoseTurn { get { return whoseTurn; } set { whoseTurn = value; } }
     public string Placement_01 { get { return placement_01; } set { placement_01 = value; } }
     public string Placement_02 { get { return placement_02; } set { placement_02 = value; } }
+    public Side OwnGamePlayerSide() { return ownGamePlayer.GetComponent<NetworkGamePlayer>().mySide; }
 
     public override void OnStartClient()
     {

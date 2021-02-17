@@ -10,10 +10,10 @@ using Mirror;
 public class SaveSystem : MonoBehaviour
 {
     [SerializeField] private GameObject modalPanel = null;
-    [SerializeField] private ShipsGrid shipsGrid = null;    
+    [SerializeField] private ShipsGrid shipsGrid = null;        
 
-    public void Start()
-    {
+    public void GetMyShipsGrid()
+    {   
         if (SceneManager.GetActiveScene().name != "Game_PVP")
         {
             return;
@@ -21,18 +21,19 @@ public class SaveSystem : MonoBehaviour
 
         OnlineGameManager ogm = gameObject.GetComponent<OnlineGameManager>();
 
-        if (ogm.isServer && ogm.isClient)
+        if (ogm.OwnGamePlayerSide() == OnlineGameManager.Side.Left)
         {
             shipsGrid = GameObject.Find("Grid_01").GetComponent<ShipsGrid>();
         }
-        else if (ogm.isClientOnly)
+        else if (ogm.OwnGamePlayerSide() == OnlineGameManager.Side.Right)
         {
             shipsGrid = GameObject.Find("Grid_02").GetComponent<ShipsGrid>();
         }
     }
-
     public void SavePattern()
     {
+        GetMyShipsGrid();
+
         int i = 0;
         BinaryFormatter bf = new BinaryFormatter();
         
@@ -50,7 +51,7 @@ public class SaveSystem : MonoBehaviour
 
             for (i = 0; i < 10; i++)
             {
-                tr = shipsGrid.transform.GetChild(i).gameObject;
+                tr = shipsGrid.transform.Find("Ship (" + i + ")").gameObject;
 
                 data.position[i] = tr.transform.localPosition;
                 data.rotation[i] = tr.transform.localRotation;
@@ -64,6 +65,8 @@ public class SaveSystem : MonoBehaviour
 
     public void LoadPattern()
     {
+        GetMyShipsGrid();
+
         var extensions = new[] {
             new ExtensionFilter("Data", "dat"),
         };
@@ -80,7 +83,7 @@ public class SaveSystem : MonoBehaviour
                 
                 for (int i = 0; i < 10; i++)
                 {                    
-                    tr = shipsGrid.transform.GetChild(i).gameObject;
+                    tr = shipsGrid.transform.Find("Ship (" + i + ")").gameObject;
                     tr.transform.localPosition = new Vector3(data.position[i].x, data.position[i].y, data.position[i].z);
                     tr.transform.localRotation = new Quaternion(0, data.rotation[i].y, 0, data.rotation[i].w);
                     if (data.position[i].x >= 0 && data.position[i].x <= 9.55f)

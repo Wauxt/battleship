@@ -6263,7 +6263,7 @@ PrefabInstance:
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
       propertyPath: m_Name
-      value: Ship
+      value: Ship (0)
       objectReference: {fileID: 0}
     - target: {fileID: 8761221068693063587, guid: d4eb8c0ad3f3c7a4f9140af6924fa97c,
         type: 3}
