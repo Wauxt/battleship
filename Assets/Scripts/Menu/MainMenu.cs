@@ -12,11 +12,11 @@ public class MainMenu : MonoBehaviour
         gameObject.SetActive(false);
     }
     void Start()
-    {        
+    {
         ReloadMenu();
     }
     public void BackInMenu()
-    {        
+    {
         ReloadMenu();
     }
     public void ReloadMenu()
@@ -35,5 +35,10 @@ public class MainMenu : MonoBehaviour
     {
         Debug.Log("Quittin\'");
         Application.Quit();
-    }    
+    }
+
+    public void LoadGame()
+    {
+        LoadFromMenu.LoadSaveFileFromMenu();
+    }
 }

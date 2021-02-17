@@ -10,8 +10,10 @@ using Mirror;
 public class SaveSystem : MonoBehaviour
 {
     [SerializeField] private GameObject modalPanel = null;
-    [SerializeField] private ShipsGrid shipsGrid = null;        
+    [SerializeField] private ShipsGrid shipsGrid = null;
+    [SerializeField] private GameManager gm = null;
 
+    public void GetGM() =>  gm = GameObject.Find("GameManager").GetComponent<GameManager>();
     public void GetMyShipsGrid()
     {   
         if (SceneManager.GetActiveScene().name != "Game_PVP")
@@ -108,7 +110,97 @@ public class SaveSystem : MonoBehaviour
             }
             file.Close();
         }
-    }   
+    }
+    
+    public void LoadGame(/*string[] path*/)
+    {
+        var extensions = new[] {
+            new ExtensionFilter("Data", "dat"),
+        };
+        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "C:\\Users\\user\\Desktop\\", extensions, false);
+
+        GetGM();        
+
+        if (path.Length != 0)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file =
+            File.Open(path[0], FileMode.Open);
+            try
+            {
+                SaveFile data = (SaveFile)bf.Deserialize(file);
+                
+                gm.ShotCount_01 = data.shotCount_01;
+                gm.ShotCount_02 = data.shotCount_02;
+                gm.HitCount_01 = data.hitCount_01;
+                gm.HitCount_02 = data.hitCount_02;
+
+                Difficulty.difficultyValue = data.difficultyValue;
+                gm.SetTactic(data.aiTactic);
+
+                gm.FirstHitIndex = data.firstHitIndex;
+                gm.LastHitIndex = data.lastHitIndex;
+
+                gm.ShipThatWasHitIsHorizontal = data.shipThatWasHitIsHorizontal;
+                gm.ShipThatWasHitIsVertical = data.shipThatWasHitIsVertical;
+
+                gm.Placement_01 = data.placement_01;
+                gm.Placement_02 = data.placement_02;  
+
+                foreach (Transform child in shipsGrid.gameObject.transform)
+                {
+                    Destroy(child.gameObject);
+                }
+                foreach (Transform child in GameObject.Find("Hitmarkers_01").transform)
+                {
+                    Destroy(child.gameObject);
+                }
+                foreach (Transform child in GameObject.Find("Hitmarkers_02").transform)
+                {
+                    Destroy(child.gameObject);
+                }
+
+                for (int i = 0; i<100; i++)
+                {
+                    if (gm.Placement_01[i] == '1')
+                    {
+                        gm.SpawnJustDeck(GameManager.Side.Left, i / 10, i % 10);
+                    }
+                    else if (gm.Placement_01[i] == '3')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Right, i / 10, i % 10, false);
+                    }
+                    else if (gm.Placement_01[i] == '4')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Right, i / 10, i % 10, true);
+                    }
+                }
+
+                for (int i = 0; i < 100; i++)
+                {                    
+                    if (gm.Placement_02[i] == '3')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Left, i / 10, i % 10, false);
+                    }
+                    else if (gm.Placement_02[i] == '4')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Left, i / 10, i % 10, true);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                modalPanel.SetActive(true);
+                Debug.Log(e.StackTrace);
+            }
+            file.Close();
+        }
+        else
+        {
+            Debug.Log("Path is empty");
+        }
+    }
+
 
     /// <summary>
     public bool PlacementIsLegit()
@@ -127,7 +219,87 @@ public class SaveSystem : MonoBehaviour
 
         return true;
     }
+
+    public void SaveGame()
+    {
+        GetGM();
+                
+        BinaryFormatter bf = new BinaryFormatter();
+
+        var extensionList = new[] {
+            new ExtensionFilter("Data", "dat"),
+        };
+        var path = StandaloneFileBrowser.SaveFilePanel(" Сохранить файл ", "C:\\Users\\user\\Desktop\\mysave", "MySave", extensionList);
+        if (path.Length != 0)
+        {
+            FileStream file = File.Create(path);
+            SaveFile data = new SaveFile();
+
+            data.shotCount_01 = gm.ShotCount_01;
+            data.shotCount_02 = gm.ShotCount_02;
+            data.hitCount_01 = gm.HitCount_01;
+            data.hitCount_02 = gm.HitCount_02;
+
+            data.difficultyValue = Difficulty.difficultyValue;
+            data.aiTactic = gm.GetTactic();
+
+            data.firstHitIndex = gm.FirstHitIndex;
+            data.lastHitIndex = gm.LastHitIndex;
+
+            data.shipThatWasHitIsHorizontal = gm.ShipThatWasHitIsHorizontal;
+            data.shipThatWasHitIsVertical = gm.ShipThatWasHitIsVertical;
+
+            data.placement_01 = gm.Placement_01;
+            data.placement_02 = gm.Placement_02;            
+            
+            bf.Serialize(file, data);
+            file.Close();
+
+        }
+        Debug.Log("Game data saved!");
+    }
     /// </summary>
+    [Serializable]
+    class SaveFile
+    {
+        public int shotCount_01;
+        public int shotCount_02;
+        public int hitCount_01;
+        public int hitCount_02;
+
+        public int difficultyValue;
+        public int aiTactic;
+
+        public int firstHitIndex;
+        public int lastHitIndex;
+
+        public bool shipThatWasHitIsHorizontal;
+        public bool shipThatWasHitIsVertical;
+
+        public string placement_01;
+        public string placement_02;
+
+        public SaveFile()
+        {
+            shotCount_01 = 0;
+            shotCount_02 = 0;
+            hitCount_01 = 0;
+            hitCount_02 = 0;
+
+            difficultyValue = 1;
+            aiTactic = 0;
+
+            firstHitIndex = -1;
+            lastHitIndex = -1;
+
+            shipThatWasHitIsHorizontal = false;
+            shipThatWasHitIsVertical = false;
+
+            placement_01 = new char[100].ToString();
+            placement_02 = new char[100].ToString(); // or just "", idk + idc
+        }
+    }
+
 
     [Serializable]
     class Pattern
@@ -195,4 +367,6 @@ public class SaveSystem : MonoBehaviour
             return new SQuaternion(rValue.x, rValue.y, rValue.z, rValue.w);
         }
     }
+
+    
 }

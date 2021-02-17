@@ -44,22 +44,28 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject battlefield = null;
     [SerializeField] private GameObject hitDeckPrefab = null;
     [SerializeField] private GameObject missSplashPrefab = null;
-
-    private int shotCount_01 = 0;
-    private int shotCount_02 = 0;
-    private int hitCount_01 = 0;
-    private int hitCount_02 = 0;
-
+    [SerializeField] private GameObject justDeckPrefab = null;
     [Header("AI stuff")]
     private Tactic aiTactic = Tactic.Random;
-    private int firstHitIndex = -1;
-    private int lastHitIndex = -1;
-    private bool shipThatWasHitIsHorizontal = false;
-    private bool shipThatWasHitIsVertical = false;
 
     public Side WhoseTurn { get; set; } = Side.Default;
     public string Placement_01 { get; set; } = "";
     public string Placement_02 { get; set; } = "";
+
+    public int ShotCount_01 { get; set; } = 0;
+    public int ShotCount_02 { get; set; } = 0;
+    public int HitCount_01 { get; set; } = 0;
+    public int HitCount_02 { get; set; } = 0;
+
+    public int FirstHitIndex { get; set; } = -1;
+    public int LastHitIndex { get; set; } = -1;    
+    public int GetTactic() { return (int)aiTactic; }
+    public void SetTactic(int val) { aiTactic = (Tactic)val; }
+
+    public bool ShipThatWasHitIsHorizontal { get; set; } = false;
+    public bool ShipThatWasHitIsVertical { get; set; } = false;
+
+
     public void GoBackToMainMenu() => SceneManager.LoadScene("Menu");
     public void Start() // AI difficulty => ship placement + tactic
     {
@@ -134,6 +140,8 @@ public class GameManager : MonoBehaviour
         barPanel.SetActive(true);
         barPanel.transform.Find("Save").gameObject.GetComponent<Button>().interactable = true;
         barPanel.transform.Find("Save").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Сохранить";
+        barPanel.transform.Find("Load").gameObject.GetComponent<Button>().interactable = true;
+        barPanel.transform.Find("Load").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Загрузить";
 
         ownCanvas.transform.Find("Panel").gameObject.SetActive(false);
 
@@ -232,9 +240,21 @@ public class GameManager : MonoBehaviour
     public void SwitchTurn() // End turn, start AI turn coroutine if WhoseTurn got changed to Side.Right
     {
         WhoseTurn = WhoseTurn == Side.Left ? Side.Right : Side.Left;
+        GameObject barPanel = GameObject.Find("MainCamera").transform.Find("Canvas").Find("Bar").Find("Panel").gameObject;
         if (WhoseTurn == Side.Right)
         {
-            StartCoroutine(AITurnCoroutine(1f));
+            barPanel.transform.Find("Save").gameObject.GetComponent<Button>().interactable = false;
+            barPanel.transform.Find("Save").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "<color #505050>Сохранить</color>";
+            barPanel.transform.Find("Load").gameObject.GetComponent<Button>().interactable = false;
+            barPanel.transform.Find("Load").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "<color #505050>Загрузить</color>";
+            StartCoroutine(AITurnCoroutine(1f));            
+        }
+        else if (WhoseTurn == Side.Left)
+        {
+            barPanel.transform.Find("Save").gameObject.GetComponent<Button>().interactable = true;
+            barPanel.transform.Find("Save").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Сохранить";
+            barPanel.transform.Find("Load").gameObject.GetComponent<Button>().interactable = true;
+            barPanel.transform.Find("Load").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "Загрузить";
         }
     }
 
@@ -242,12 +262,12 @@ public class GameManager : MonoBehaviour
     public IEnumerator AITurnCoroutine(float count) // -------------- AI LOGIC --------------
     {
         bool miss = false;
-        while (!miss && hitCount_02 < 20)
+        while (!miss && HitCount_02 < 20)
         {
             int index;
             yield return new WaitForSeconds(count);
 
-            if (lastHitIndex >= 0) // if there is a ship that we need to finish
+            if (LastHitIndex >= 0) // if there is a ship that we need to finish
             {
                 index = AIChooseCell_FinishShip();
             }
@@ -270,14 +290,14 @@ public class GameManager : MonoBehaviour
             }
             else if (Placement_01[index] == '1')
             {
-                if (firstHitIndex == -1)
-                    firstHitIndex = index;
-                lastHitIndex = index;
+                if (FirstHitIndex == -1)
+                    FirstHitIndex = index;
+                LastHitIndex = index;
             }
 
             ShootAndUpdateCell(Side.Right, row, column);
         }
-        if (hitCount_02 != 20)
+        if (HitCount_02 != 20)
         {
             yield return new WaitForSeconds(.5f);
             SwitchTurn();
@@ -289,8 +309,8 @@ public class GameManager : MonoBehaviour
     {
         int index;
 
-        int lastHitRow = lastHitIndex / 10;
-        int lastHitColumn = lastHitIndex % 10;
+        int lastHitRow = LastHitIndex / 10;
+        int lastHitColumn = LastHitIndex % 10;
 
         int[,] targetCells = new int[10, 10];
 
@@ -302,7 +322,7 @@ public class GameManager : MonoBehaviour
             }
         }
 
-        if (firstHitIndex == lastHitIndex)
+        if (FirstHitIndex == LastHitIndex)
         {
             int i = lastHitRow;
             int j = lastHitColumn;
@@ -336,12 +356,12 @@ public class GameManager : MonoBehaviour
             int j = lastHitColumn;
 
             // what is the ship's orientation?
-            shipThatWasHitIsVertical = (i >= 1 && targetCells[i - 1, j] == 4) || (i <= 8 && targetCells[i + 1, j] == 4);
-            shipThatWasHitIsHorizontal = (j >= 1 && targetCells[i, j - 1] == 4) || (j <= 8 && targetCells[i, j + 1] == 4);
+            ShipThatWasHitIsVertical = (i >= 1 && targetCells[i - 1, j] == 4) || (i <= 8 && targetCells[i + 1, j] == 4);
+            ShipThatWasHitIsHorizontal = (j >= 1 && targetCells[i, j - 1] == 4) || (j <= 8 && targetCells[i, j + 1] == 4);
 
             List<Vector2Int> Directions = new List<Vector2Int>();
 
-            if (shipThatWasHitIsHorizontal)
+            if (ShipThatWasHitIsHorizontal)
             {
                 if (j >= 1) //can we go left ?
                 {
@@ -358,7 +378,7 @@ public class GameManager : MonoBehaviour
                     }
                 }
             }
-            else if (shipThatWasHitIsVertical)
+            else if (ShipThatWasHitIsVertical)
             {
                 if (i >= 1) // can we go up ?
                 {
@@ -378,10 +398,10 @@ public class GameManager : MonoBehaviour
 
             if (Directions.Count == 0) // if we stuck => go back to firstHitindex
             {
-                i = firstHitIndex / 10;
-                j = firstHitIndex % 10;
+                i = FirstHitIndex / 10;
+                j = FirstHitIndex % 10;
 
-                if (shipThatWasHitIsHorizontal)
+                if (ShipThatWasHitIsHorizontal)
                 {
                     if (j >= 1 && (targetCells[i, j - 1] == 0) || (targetCells[i, j - 1] == 1)) // can we go left ?
                     {
@@ -392,7 +412,7 @@ public class GameManager : MonoBehaviour
                         Directions.Add(new Vector2Int(i, j + 1));
                     }
                 }
-                else if (shipThatWasHitIsVertical)
+                else if (ShipThatWasHitIsVertical)
                 {
                     if (i >= 1 && (targetCells[i - 1, j] == 0 || targetCells[i - 1, j] == 1)) // can we go up ?
                     {
@@ -624,10 +644,10 @@ public class GameManager : MonoBehaviour
                     // AI CHECK
                     if (shooter == Side.Right)
                     {
-                        shipThatWasHitIsHorizontal = false;
-                        shipThatWasHitIsVertical = false;
-                        firstHitIndex = -1;
-                        lastHitIndex = -1;
+                        ShipThatWasHitIsHorizontal = false;
+                        ShipThatWasHitIsVertical = false;
+                        FirstHitIndex = -1;
+                        LastHitIndex = -1;
                     }
 
                 }
@@ -637,18 +657,18 @@ public class GameManager : MonoBehaviour
         // for stat
         if (shooter == Side.Left)
         {
-            shotCount_01++;
+            ShotCount_01++;
             if (hit)
             {
-                hitCount_01++;
+                HitCount_01++;
             }
         }
         else if (shooter == Side.Right)
         {
-            shotCount_02++;
+            ShotCount_02++;
             if (hit)
             {
-                hitCount_02++;
+                HitCount_02++;
             }
         }
 
@@ -670,11 +690,11 @@ public class GameManager : MonoBehaviour
             Placement_01 = targetPlacement;
         }
 
-        if (hitCount_01 == 20)
+        if (HitCount_01 == 20)
         {
             StartCoroutine(AnnounceWinnerAfterSeconds(Side.Left, .5f));
         }
-        else if (hitCount_02 == 20)
+        else if (HitCount_02 == 20)
         {
             StartCoroutine(AnnounceWinnerAfterSeconds(Side.Right, .5f));
         }
@@ -751,6 +771,14 @@ public class GameManager : MonoBehaviour
         GameObject marker = hit ? Instantiate(hitDeckPrefab, parent) : Instantiate(missSplashPrefab, parent);
         marker.transform.position = position;
     }
+
+    public void SpawnJustDeck(Side owner, int row, int column)
+    {
+        Transform parent = owner == Side.Left ? GameObject.Find("Grid_01").transform : GameObject.Find("Grid_02").transform;
+        Vector3 position = new Vector3((owner == Side.Right ? 515 : 395) + (column * 10), 0, 145 - (row * 10));
+        GameObject deck =Instantiate(justDeckPrefab, parent);
+        deck.transform.position = position;
+    }
     private IEnumerator AnnounceWinnerAfterSeconds(Side winner, float count)
     {
         battlefield.SetActive(false);
@@ -769,8 +797,8 @@ public class GameManager : MonoBehaviour
         TMP_Text acc_01 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Acc_01").GetComponent<TMP_Text>();
         TMP_Text acc_02 = overlayEndGame.transform.Find("Panel").transform.Find("Stats").Find("Acc_02").GetComponent<TMP_Text>();
 
-        float accuracy_01 = shotCount_01 > 0 ? (float)hitCount_01 * 100 / (float)shotCount_01 : 0;
-        float accuracy_02 = shotCount_02 > 0 ? (float)hitCount_02 * 100 / (float)shotCount_02 : 0;
+        float accuracy_01 = ShotCount_01 > 0 ? (float)HitCount_01 * 100 / (float)ShotCount_01 : 0;
+        float accuracy_02 = ShotCount_02 > 0 ? (float)HitCount_02 * 100 / (float)ShotCount_02 : 0;
 
         if (winner == Side.Left)
         {
