@@ -160,6 +160,8 @@ public class SaveSystem : MonoBehaviour
                     Destroy(child.gameObject);
                 }
 
+                gm.opponentNameInfo.text = "<color #ff0000>Противник (" + (Difficulty.difficultyValue == 2 ? "тяжело" : Difficulty.difficultyValue == 1 ? "средне" : "легко") + ")</color>";
+
                 for (int i = 0; i<100; i++)
                 {
                     if (gm.Placement_01[i] == '1')

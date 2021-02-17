@@ -37,7 +37,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject overlayHitMarkers = null;
     [SerializeField] private GameObject overlayEndGame = null;
     [SerializeField] private TMP_Text ownNameInfo = null;
-    [SerializeField] private TMP_Text opponentNameInfo = null;
+    [SerializeField] public  TMP_Text opponentNameInfo = null;
     [SerializeField] private TMP_Text whoseTurnInfo = null;
 
     [Header("Game")]
