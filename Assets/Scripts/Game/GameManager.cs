@@ -74,7 +74,7 @@ public class GameManager : MonoBehaviour
                 aiTactic = (Tactic)0;
                 aiGrid.AutoPlacement_Random();
                 break;
-            case 1:                
+            case 1:
                 aiTactic = (Tactic)1; // DEBUG
                 //aiTactic = (Tactic)Random.Range(0, 2); 
                 switch (medium)
@@ -103,6 +103,12 @@ public class GameManager : MonoBehaviour
                         break;
                 }
                 break;
+        }        
+        opponentTerrain.gameObject.SetActive(false);
+
+        foreach (Transform child in opponentGrid.transform)
+        {
+            child.gameObject.SetActive(false);
         }
     }
     public void UpdateBattleFields()
@@ -137,39 +143,41 @@ public class GameManager : MonoBehaviour
         opponentNameInfo.text = "<color #ff0000>Противник (" + (Difficulty.difficultyValue == 2 ? "тяжело" : Difficulty.difficultyValue == 1 ? "средне" : "легко") + ")</color>";
 
         string myplacement = "";
-        int[,] cells = new int[10, 10];
-
-        if (true)
+        int[,] cells = ownGrid.GetComponent<ShipsGrid>().GridCells;
+ 
+        for (int i = 0; i < 10; i++)
         {
-            cells = ownGrid.GetComponent<ShipsGrid>().GridCells;
-            for (int i = 0; i < 10; i++)
+            for (int j = 0; j < 10; j++)
             {
-                for (int j = 0; j < 10; j++)
-                {
-                    myplacement += cells[i, j];
-                }
+                myplacement += cells[i, j];
             }
-            Placement_01 = myplacement;
+        }
+        Placement_01 = myplacement;
 
-            string opponentPlacement = "";
+        foreach (Transform child in opponentGrid.transform)
+        {
+            child.gameObject.SetActive(true);
+        }
 
-            opponentGrid.GetComponent<ShipsGrid>().EndPlacement();
+        string opponentPlacement = "";
 
-            cells = opponentGrid.GetComponent<ShipsGrid>().GridCells;
-            for (int i = 0; i < 10; i++)
+        opponentGrid.GetComponent<ShipsGrid>().EndPlacement();
+
+        cells = opponentGrid.GetComponent<ShipsGrid>().GridCells;
+        for (int i = 0; i < 10; i++)
+        {
+            for (int j = 0; j < 10; j++)
             {
-                for (int j = 0; j < 10; j++)
-                {
-                    opponentPlacement += cells[i, j];
-                }
+                opponentPlacement += cells[i, j];
             }
-            Placement_02 = opponentPlacement;
+        }
+        Placement_02 = opponentPlacement;
 
-            foreach (Transform child in opponentGrid.transform)
-            {
-                child.gameObject.SetActive(false);
-            }
-        }//// set placements
+        foreach (Transform child in opponentGrid.transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        //// set placements
 
         WhoseTurn = Side.Left;
         whoseTurnInfo.gameObject.SetActive(true);
@@ -240,7 +248,7 @@ public class GameManager : MonoBehaviour
 
             if (lastHitIndex >= 0) // if there is a ship that we need to finish
             {
-                index = AIChooseCell_FinishShip();                
+                index = AIChooseCell_FinishShip();
             }
             else
             {
@@ -249,7 +257,7 @@ public class GameManager : MonoBehaviour
                 else if (aiTactic == Tactic.Diagonal)
                     index = AIChooseCell_Diagonal();
                 else
-                    index = AIChooseCell_FastCarrier();                       
+                    index = AIChooseCell_FastCarrier();
             }
 
             int row = index / 10;
@@ -447,7 +455,7 @@ public class GameManager : MonoBehaviour
     {
         List<Vector2Int> gooseFeetCells = new List<Vector2Int>();
         for (int i = 0; i < 10; i++)
-        {            
+        {
             int col1;
             int col2;
             int col3 = 10;
