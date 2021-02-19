@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class MainCamera : MonoBehaviour
-{
-    // Start is called before the first frame update    
+public class MainMenuCamera : MonoBehaviour
+{       
     public void PlayGame() => SceneManager.LoadScene("Game_PVE");
 }

@@ -6,23 +6,12 @@ using TMPro;
 
 public class Authorization : MonoBehaviour
 {
-    public static string nickname;    
+    public static string nickname;
     public static bool isAuthorized;
-       
-    GameObject authField;
-    GameObject errorPanel;
-    GameObject textField;
-    GameObject logo;
-    
 
-    void Start()
-    {
-        authField = transform.Find("AuthField").gameObject;
-        errorPanel = authField.transform.Find("ErrorPanel").gameObject;
-        textField = authField.transform.Find("InputField").gameObject.transform.Find("Text").gameObject;
-        logo = transform.Find("Logo").gameObject;        
-    }
-    
+    [SerializeField] private GameObject errorPanel = null;
+    [SerializeField] private Text textField = null;
+
     bool IsAllLettersOrDigits(string s)
     {
         foreach (char c in s)
@@ -33,9 +22,9 @@ public class Authorization : MonoBehaviour
         return true;
     }
 
-    public void Authorize(GameObject textField)
+    public void Authorize()
     {
-        string name = textField.GetComponent<Text>().text;
+        string name = textField.text;
 
         if ((string.IsNullOrEmpty(name)) || (name.Length < 5))
         {
@@ -54,9 +43,8 @@ public class Authorization : MonoBehaviour
         errorPanel.SetActive(false);
 
         nickname = name;
-        isAuthorized = true;        
-        
-        GetComponent<MainMenu>().ReloadMenu();        
-        logo.GetComponent<Animator>().SetBool("isAuthorized", true);        
-    }    
+        isAuthorized = true;
+
+        gameObject.GetComponent<MainMenu>().ReloadMenu();
+    }
 }

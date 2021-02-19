@@ -9,7 +9,6 @@ public class PlayerScoreList : MonoBehaviour
     ScoreManager scoreManager;
     int lastChangeCounter;
     public string sortingScoreType = "winRate";
-    // Start is called before the first frame update
     void Start()
     {
         scoreManager = GameObject.FindObjectOfType<ScoreManager>();

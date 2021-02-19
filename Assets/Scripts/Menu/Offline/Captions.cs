@@ -5,34 +5,33 @@ using UnityEngine.UI;
 
 public class Captions : MonoBehaviour
 {
-    // Start is called before the first frame update
+    [SerializeField] GameObject low = null;
+    [SerializeField] GameObject medium = null;
+    [SerializeField] GameObject high = null;
+        
     public void ShowCaption()
-    {
-        GameObject Low = transform.Find("Text 0").gameObject;
-        GameObject Medium = transform.Find("Text 1").gameObject;
-        GameObject High = transform.Find("Text 2").gameObject;
-
+    { 
         switch (Difficulty.difficultyValue)
         {
             case 0:
                 {
-                    Low.SetActive(true);
-                    Medium.SetActive(false);
-                    High.SetActive(false);
+                    low.SetActive(true);
+                    medium.SetActive(false);
+                    high.SetActive(false);
                     break;
                 }
             case 1:
                 {
-                    Low.SetActive(false);
-                    Medium.SetActive(true);
-                    High.SetActive(false);
+                    low.SetActive(false);
+                    medium.SetActive(true);
+                    high.SetActive(false);
                     break;
                 }
             case 2:
                 {
-                    Low.SetActive(false);
-                    Medium.SetActive(false);
-                    High.SetActive(true);
+                    low.SetActive(false);
+                    medium.SetActive(false);
+                    high.SetActive(true);
                     break;
                 }
         }            

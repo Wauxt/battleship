@@ -1,44 +1,63 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using TMPro;
 
 
 public class MainMenu : MonoBehaviour
 {
+    [SerializeField] private GameObject buttons = null;
+    [SerializeField] private Button loadButton = null;
+    [SerializeField] private Button playButton = null;
+    [SerializeField] private Button onlineButton = null;
+
+    [SerializeField] private GameObject logo = null;
+    [SerializeField] private GameObject authField = null;
     public void OfflineStartButton()
     {
         GameObject.Find("Main Camera").GetComponent<Animator>().SetTrigger("hasToMoveUp");
-        gameObject.SetActive(false);
+        StartCoroutine(StartGameAfterSeconds(1.5f));        
     }
-    void Start()
+    public void Start() => ReloadMenu();    
+    public IEnumerator StartGameAfterSeconds(float count)
     {
-        ReloadMenu();
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(false);
+        }
+        yield return new WaitForSeconds(count);
+        SceneManager.LoadScene("Game_PVE");
     }
-    public void BackInMenu()
-    {
-        ReloadMenu();
-    }
+    public void BackInMenu() => ReloadMenu();
     public void ReloadMenu()
-    {
-        GameObject buttons = transform.Find("Buttons").gameObject;
-        GameObject authField = transform.Find("AuthField").gameObject;
-        GameObject logo = transform.Find("Logo").gameObject;
+    {      
 
-        logo.SetActive(true);
+        buttons.SetActive(true);
+
+        loadButton.gameObject.SetActive(true);
+        loadButton.interactable = Authorization.isAuthorized;
+        loadButton.gameObject.transform.GetChild(0).gameObject.GetComponent<TMP_Text>().text = Authorization.isAuthorized ? "Загрузить" : "<color #909090>Загрузить</color>";
+
+        playButton.gameObject.SetActive(true);
+        playButton.interactable = Authorization.isAuthorized;
+        playButton.gameObject.transform.GetChild(0).gameObject.GetComponent<TMP_Text>().text = Authorization.isAuthorized ? "Новая игра" : "<color #909090>Новая игра</color>";
+
+        onlineButton.gameObject.SetActive(true);
+        onlineButton.interactable = Authorization.isAuthorized;
+        onlineButton.gameObject.transform.GetChild(0).gameObject.GetComponent<TMP_Text>().text = Authorization.isAuthorized ? "Играть по сети" : "<color #909090>Играть по сети</color>";
+
+
         authField.SetActive(!Authorization.isAuthorized);
 
-        buttons.SetActive(false);
-        buttons.SetActive(true);
+        logo.GetComponent<Image>().color = new Color(255, 255, 255, 0);
+        logo.SetActive(true);        
+        logo.GetComponent<Animator>().SetBool("isAuthorized", Authorization.isAuthorized);   
+        
     }
-    public void Quit()
-    {
-        Debug.Log("Quittin\'");
-        Application.Quit();
-    }
-
-    public void LoadGame()
-    {
-        LoadFromMenu.LoadSaveFileFromMenu();
-    }
+    public void Quit() => Application.Quit();    
+    public void OpenRules() => Application.OpenURL("Rules.html");
+    public void OpenAbout() => Application.OpenURL("About.html");
 }
