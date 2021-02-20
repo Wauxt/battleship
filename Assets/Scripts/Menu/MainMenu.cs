@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro;
+using Mirror;
 
 
 public class MainMenu : MonoBehaviour
@@ -16,6 +17,20 @@ public class MainMenu : MonoBehaviour
 
     [SerializeField] private GameObject logo = null;
     [SerializeField] private GameObject authField = null;
+
+    private NetworkManagerBS room;
+    private NetworkManagerBS Room
+    {
+        get
+        {
+            if (room != null)
+            {
+                return room;
+            }
+            return room = NetworkManager.singleton as NetworkManagerBS;
+        }
+    }
+
     public void OfflineStartButton()
     {
         GameObject.Find("Main Camera").GetComponent<Animator>().SetTrigger("hasToMoveUp");
@@ -33,13 +48,17 @@ public class MainMenu : MonoBehaviour
     }
     public void BackInMenu() => ReloadMenu();
     public void ReloadMenu()
-    {      
+    {
+        foreach (Transform child in transform)
+        {
+            child.gameObject.SetActive(false);
+        }
 
         buttons.SetActive(true);
 
         loadButton.gameObject.SetActive(true);
         loadButton.interactable = Authorization.isAuthorized;
-        loadButton.gameObject.transform.GetChild(0).gameObject.GetComponent<TMP_Text>().text = Authorization.isAuthorized ? "Загрузить" : "<color #909090>Загрузить</color>";
+        loadButton.gameObject.transform.GetChild(0).gameObject.GetComponent<TMP_Text>().text = Authorization.isAuthorized ? "Загрузить игру" : "<color #909090>Загрузить игру</color>";
 
         playButton.gameObject.SetActive(true);
         playButton.interactable = Authorization.isAuthorized;
@@ -60,4 +79,5 @@ public class MainMenu : MonoBehaviour
     public void Quit() => Application.Quit();    
     public void OpenRules() => Application.OpenURL("Rules.html");
     public void OpenAbout() => Application.OpenURL("About.html");
+    public void DirtyLoadGame() => Room.DirtyLoadOfflineGame();
 }

@@ -203,6 +203,92 @@ public class SaveSystem : MonoBehaviour
         }
     }
 
+    public void LoadGame(string[] path)
+    {
+        GetGM();
+
+        if (path.Length != 0)
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+            FileStream file =
+            File.Open(path[0], FileMode.Open);
+            try
+            {
+                SaveFile data = (SaveFile)bf.Deserialize(file);
+
+                gm.ShotCount_01 = data.shotCount_01;
+                gm.ShotCount_02 = data.shotCount_02;
+                gm.HitCount_01 = data.hitCount_01;
+                gm.HitCount_02 = data.hitCount_02;
+
+                Difficulty.difficultyValue = data.difficultyValue;
+                gm.SetTactic(data.aiTactic);
+
+                gm.FirstHitIndex = data.firstHitIndex;
+                gm.LastHitIndex = data.lastHitIndex;
+
+                gm.ShipThatWasHitIsHorizontal = data.shipThatWasHitIsHorizontal;
+                gm.ShipThatWasHitIsVertical = data.shipThatWasHitIsVertical;
+
+                gm.Placement_01 = data.placement_01;
+                gm.Placement_02 = data.placement_02;
+
+                foreach (Transform child in shipsGrid.gameObject.transform)
+                {
+                    Destroy(child.gameObject);
+                }
+                foreach (Transform child in GameObject.Find("Hitmarkers_01").transform)
+                {
+                    Destroy(child.gameObject);
+                }
+                foreach (Transform child in GameObject.Find("Hitmarkers_02").transform)
+                {
+                    Destroy(child.gameObject);
+                }
+
+                gm.opponentNameInfo.text = "<color #ff0000>Противник (" + (Difficulty.difficultyValue == 2 ? "тяжело" : Difficulty.difficultyValue == 1 ? "средне" : "легко") + ")</color>";
+
+                for (int i = 0; i < 100; i++)
+                {
+                    if (gm.Placement_01[i] == '1')
+                    {
+                        gm.SpawnJustDeck(GameManager.Side.Left, i / 10, i % 10);
+                    }
+                    else if (gm.Placement_01[i] == '3')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Right, i / 10, i % 10, false);
+                    }
+                    else if (gm.Placement_01[i] == '4')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Right, i / 10, i % 10, true);
+                    }
+                }
+
+                for (int i = 0; i < 100; i++)
+                {
+                    if (gm.Placement_02[i] == '3')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Left, i / 10, i % 10, false);
+                    }
+                    else if (gm.Placement_02[i] == '4')
+                    {
+                        gm.SpawnMarkerHitOrMiss(GameManager.Side.Left, i / 10, i % 10, true);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                modalPanel.SetActive(true);
+                Debug.Log(e.StackTrace);
+            }
+            file.Close();
+        }
+        else
+        {
+            Debug.Log("Path is empty");
+        }
+    }
+
 
     /// <summary>
     public bool PlacementIsLegit()

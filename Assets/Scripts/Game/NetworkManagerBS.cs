@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using System;
 using System.Linq;
 using Mirror;
+using SFB;
 
 
 
@@ -238,6 +239,30 @@ public class NetworkManagerBS : NetworkManager
         GameObject marker = hit ? Instantiate(shootHitCube) : Instantiate(shootMissSplash);
         marker.transform.position = position;
         NetworkServer.Spawn(marker);
-    }   
+    }
+    
+    public IEnumerator DirtyLoadOfflineGameAfterSeconds(float count, string[] path)
+    {
+        SceneManager.LoadScene("Game_PVE");
+        
+        yield return new WaitForSeconds(count);
+        //start game somehow
+        GameObject.Find("GameManager").GetComponent<GameManager>().ReadyToBattle();
+        GameObject.Find("GameManager").GetComponent<SaveSystem>().LoadGame(path);
+    }
+
+    public void DirtyLoadOfflineGame()
+    {
+        var extensions = new[] {
+            new ExtensionFilter("Data", "dat"),
+        };
+        var path = StandaloneFileBrowser.OpenFilePanel("Open File", "C:\\Users\\user\\Desktop\\", extensions, false);
+
+        if (path.Length > 0)
+        {
+            StartCoroutine(DirtyLoadOfflineGameAfterSeconds(2f,path));        
+        }
+    }
+
 
 }

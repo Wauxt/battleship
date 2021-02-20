@@ -6,7 +6,6 @@ using UnityEngine.UI;
 public class Difficulty : MonoBehaviour
 {    
     public static int difficultyValue = 1;
-
     public void OnEnable() => ChooseDifficulty();
     public void ChooseDifficulty()
     {

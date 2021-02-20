@@ -9,19 +9,20 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
 
-public class OnlineMenu : MonoBehaviour
+public class OnlineLobbyMenu : MonoBehaviour
 {
     [Header("UI")]
     [SerializeField] private TMP_InputField ipAddressInputField = null;
     [SerializeField] private Text hostIpAddressText = null;
     [SerializeField] private TMP_Text errorInfoText = null;
+    [SerializeField] private GameObject caption = null;
 
     [Header("Buttons")]
     [SerializeField] private Button joinButton = null;
     [SerializeField] private Button hostButton = null;
     [SerializeField] private Button discButton = null;
     [SerializeField] private Button closeHostButton = null;
-    [SerializeField] private Button backToMenuButton = null;
+    [SerializeField] private Button backToMenuButton = null;    
 
     float lastTimeTriedToConnect;
 
@@ -78,6 +79,7 @@ public class OnlineMenu : MonoBehaviour
 
             joinButton.interactable = false;
             backToMenuButton.interactable = false;
+            caption.SetActive(false);
             ToggleHostCloseConn();
         }
         catch
@@ -86,6 +88,8 @@ public class OnlineMenu : MonoBehaviour
             discButton.gameObject.SetActive(false);
             hostButton.gameObject.SetActive(true);
             closeHostButton.gameObject.SetActive(false);
+
+            caption.SetActive(true);
 
             return;
         }
@@ -115,6 +119,8 @@ public class OnlineMenu : MonoBehaviour
         hostButton.interactable = false;
         discButton.interactable = false;
 
+        caption.SetActive(false);
+
         backToMenuButton.interactable = false;
     }
 
@@ -126,6 +132,9 @@ public class OnlineMenu : MonoBehaviour
 
         joinButton.interactable = true;
         backToMenuButton.interactable = true;
+
+        caption.SetActive(true);
+
         ToggleHostCloseConn();
     }
     public void Disconnect()
@@ -147,6 +156,8 @@ public class OnlineMenu : MonoBehaviour
         {
             lastTimeTriedToConnect = 0f;
 
+            caption.SetActive(false);
+
             joinButton.interactable = true;
             discButton.interactable = true;
             backToMenuButton.interactable = false;
@@ -161,6 +172,8 @@ public class OnlineMenu : MonoBehaviour
             hostButton.interactable = true;
             joinButton.interactable = true;
             discButton.interactable = true;
+
+            caption.SetActive(true);
 
             backToMenuButton.interactable = true;
 
