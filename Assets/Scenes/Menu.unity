@@ -1292,7 +1292,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1371049786}
+      - m_Target: {fileID: 0}
         m_MethodName: setSortByName
         m_Mode: 1
         m_Arguments:
@@ -3843,7 +3843,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1371049786}
+      - m_Target: {fileID: 0}
         m_MethodName: setSortByWinRate
         m_Mode: 1
         m_Arguments:
@@ -4721,7 +4721,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &791403919
@@ -4967,18 +4967,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 807067128}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 1861522188}
-        m_MethodName: AddADummyEntry
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &807067128
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5060,7 +5049,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 825270572}
-  - component: {fileID: 825270573}
   m_Layer: 5
   m_Name: About
   m_TagString: Untagged
@@ -5090,18 +5078,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 45.25}
   m_SizeDelta: {x: 500, y: 492.5}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &825270573
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 825270571}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 892774b8aecbd494b87bc62ed8ea8009, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &847171105
 GameObject:
   m_ObjectHideFlags: 0
@@ -7584,8 +7560,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1861522188}
-        m_MethodName: ClearDummyScores
+      - m_Target: {fileID: 1861522187}
+        m_MethodName: GetLeaderboard
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -8126,7 +8102,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1371049784}
-  - component: {fileID: 1371049786}
   - component: {fileID: 1371049785}
   - component: {fileID: 1371049787}
   m_Layer: 5
@@ -8184,21 +8159,6 @@ MonoBehaviour:
   m_ChildControlHeight: 0
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
---- !u!114 &1371049786
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1371049783}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0952e5e81439d2545b4f249a65539776, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerScoreEntryPrefab: {fileID: 7422820747210347218, guid: 022a4cb1a4da3bb4ea666e4b6f693ed0,
-    type: 3}
-  sortingScoreType: winRate
 --- !u!114 &1371049787
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8336,7 +8296,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1387434436
@@ -9069,7 +9029,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: 0, z: 0, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1469067921
@@ -11577,7 +11537,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1861522186}
   - component: {fileID: 1861522187}
-  - component: {fileID: 1861522188}
   m_Layer: 5
   m_Name: Stats
   m_TagString: Untagged
@@ -11616,21 +11575,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1861522185}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cbe5ccc10ca6dce4faeaf3145b5199df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &1861522188
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1861522185}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 9ddebb7ced5c67943b9e2c2c7ef57e6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  scoreList: {fileID: 1371049783}
+  scoreEntryPrefab: {fileID: 7422820747210347218, guid: 022a4cb1a4da3bb4ea666e4b6f693ed0,
+    type: 3}
 --- !u!1 &1879680658
 GameObject:
   m_ObjectHideFlags: 0
@@ -13349,7 +13299,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1371049786}
+      - m_Target: {fileID: 0}
         m_MethodName: setSortByAccuracy
         m_Mode: 1
         m_Arguments:

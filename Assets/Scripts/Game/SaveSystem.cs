@@ -64,7 +64,6 @@ public class SaveSystem : MonoBehaviour
         }
         Debug.Log("Game data saved!");          
     }
-
     public void LoadPattern()
     {
         GetMyShipsGrid();
@@ -110,9 +109,8 @@ public class SaveSystem : MonoBehaviour
             }
             file.Close();
         }
-    }
-    
-    public void LoadGame(/*string[] path*/)
+    }    
+    public void LoadGame()
     {
         var extensions = new[] {
             new ExtensionFilter("Data", "dat"),
@@ -202,7 +200,6 @@ public class SaveSystem : MonoBehaviour
             Debug.Log("Path is empty");
         }
     }
-
     public void LoadGame(string[] path)
     {
         GetGM();
@@ -287,10 +284,7 @@ public class SaveSystem : MonoBehaviour
         {
             Debug.Log("Path is empty");
         }
-    }
-
-
-    /// <summary>
+    }    
     public bool PlacementIsLegit()
     {
         for (int i = 0; i < 10; i++)
@@ -307,7 +301,6 @@ public class SaveSystem : MonoBehaviour
 
         return true;
     }
-
     public void SaveGame()
     {
         GetGM();
@@ -387,7 +380,6 @@ public class SaveSystem : MonoBehaviour
             placement_02 = new char[100].ToString(); // or just "", idk + idc
         }
     }
-
 
     [Serializable]
     class Pattern

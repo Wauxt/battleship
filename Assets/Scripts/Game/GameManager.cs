@@ -45,6 +45,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject hitDeckPrefab = null;
     [SerializeField] private GameObject missSplashPrefab = null;
     [SerializeField] private GameObject justDeckPrefab = null;
+
     [Header("AI stuff")]
     private Tactic aiTactic = Tactic.Random;
 
@@ -782,10 +783,72 @@ public class GameManager : MonoBehaviour
     private IEnumerator AnnounceWinnerAfterSeconds(Side winner, float count)
     {
         battlefield.SetActive(false);
-        yield return new WaitForSeconds(count);
-        RpcAnnounceWinner(winner);
+        int winCount = 0;
+        int matchCount = 0;
+        int hitCount = 0;
+        int shotCount = 0;
+
+        bool doneHere = false;
+
+        while (!doneHere)
+        {
+
+            WWW get = new WWW(ScoreManager.webURL + ScoreManager.publicCode + "/pipe-get/" + Authorization.nickname);
+            yield return get;
+
+            if (string.IsNullOrEmpty(get.error))
+            {
+                string[] entries = get.text.Split(new char[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+                if (entries.Length != 0)
+                {
+                    string[] entryInfo = entries[0].Split(new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries);
+                    if (entryInfo.Length != 0)
+                    {
+                        winCount = int.Parse(entryInfo[1]);
+                        matchCount = int.Parse(entryInfo[2]);
+                        hitCount = int.Parse(entryInfo[3]);
+                        shotCount = int.Parse(entryInfo[4]);
+                    }
+                }
+                print("get succes! " + get.text);
+                doneHere = true;
+            }
+            else
+            {
+                print("get error: " + get.error);
+                yield return new WaitForSeconds(1f);
+            }            
+        }
+
+        winCount = winner == Side.Left ? winCount + 1 : winCount;
+        matchCount++;
+        hitCount += HitCount_01;
+        shotCount += ShotCount_01;
+
+        string newPlayerInfo = string.Format("{0}/{1}/{2}/{3}|{4}", Authorization.nickname, winCount, matchCount, hitCount, shotCount);
+
+        doneHere = false;
+
+        while (!doneHere)
+        {
+            WWW post = new WWW(ScoreManager.webURL + ScoreManager.privateCode + "/add/" + newPlayerInfo);
+            yield return post;
+
+            if (string.IsNullOrEmpty(post.error))
+            {
+                print("post succes! " + newPlayerInfo);
+                doneHere = true;
+            }
+            else
+            {
+                print("post error: " + post.error);
+                yield return new WaitForSeconds(1f); 
+            }
+        }
+
+        AnnounceWinner(winner);
     }
-    public void RpcAnnounceWinner(Side winner)
+    public void AnnounceWinner(Side winner)
     {
         overlayEndGame.SetActive(true);
         overlayEndGame.GetComponent<Animator>().SetTrigger("GameEnded");
@@ -816,5 +879,6 @@ public class GameManager : MonoBehaviour
 
         name_01.text = Authorization.nickname;
         name_02.text = "Противник (" + (Difficulty.difficultyValue == 2 ? "тяжело" : Difficulty.difficultyValue == 1 ? "средне" : "легко") + ")";
+        
     }
 }
