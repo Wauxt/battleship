@@ -39,6 +39,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TMP_Text ownNameInfo = null;
     [SerializeField] public  TMP_Text opponentNameInfo = null;
     [SerializeField] private TMP_Text whoseTurnInfo = null;
+    [SerializeField] private Animator loadingRingAnimator = null;
 
     [Header("Game")]
     [SerializeField] private GameObject battlefield = null;
@@ -789,6 +790,7 @@ public class GameManager : MonoBehaviour
         int shotCount = 0;
 
         bool doneHere = false;
+        loadingRingAnimator.SetBool("Loading", true);
 
         while (!doneHere)
         {
@@ -812,6 +814,7 @@ public class GameManager : MonoBehaviour
                 }
                 print("get succes! " + get.text);
                 doneHere = true;
+                loadingRingAnimator.SetBool("Loading", false);
             }
             else
             {
@@ -827,6 +830,7 @@ public class GameManager : MonoBehaviour
 
         string newPlayerInfo = string.Format("{0}/{1}/{2}/{3}|{4}", Authorization.nickname, winCount, matchCount, hitCount, shotCount);
 
+        loadingRingAnimator.SetBool("Loading", true);
         doneHere = false;
 
         while (!doneHere)
@@ -838,6 +842,7 @@ public class GameManager : MonoBehaviour
             {
                 print("post succes! " + newPlayerInfo);
                 doneHere = true;
+                loadingRingAnimator.SetBool("Loading", false);
             }
             else
             {
