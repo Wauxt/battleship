@@ -51,15 +51,17 @@ public class ScoreManager : MonoBehaviour
         loadingRingAnimator.SetBool("Loading", true);
         while (!doneHere)
         {            
-            WWW get = new WWW(webURL + publicCode + "/pipe/");
-            yield return get;
+            var get = new UnityWebRequest(webURL + publicCode + "/pipe/");
+            get.downloadHandler = new DownloadHandlerBuffer();
+
+            yield return get.SendWebRequest();
 
             if (string.IsNullOrEmpty(get.error))
             {
                 doneHere = true;
 
-                FormEntryList(get.text);
-                print("get success! " + get.text);
+                FormEntryList(get.downloadHandler.text);
+                print("get success! " + get.downloadHandler.text);
 
                 loadingRingAnimator.SetBool("Loading", false);
             }

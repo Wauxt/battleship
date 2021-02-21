@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
 using Mirror;
 using TMPro;
 
@@ -794,13 +795,13 @@ public class GameManager : MonoBehaviour
 
         while (!doneHere)
         {
-
-            WWW get = new WWW(ScoreManager.webURL + ScoreManager.publicCode + "/pipe-get/" + Authorization.nickname);
-            yield return get;
+            var get = new UnityWebRequest(ScoreManager.webURL + ScoreManager.publicCode + "/pipe-get/" + Authorization.nickname);
+            get.downloadHandler = new DownloadHandlerBuffer();
+            yield return get.SendWebRequest(); 
 
             if (string.IsNullOrEmpty(get.error))
             {
-                string[] entries = get.text.Split(new char[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+                string[] entries = get.downloadHandler.text.Split(new char[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
                 if (entries.Length != 0)
                 {
                     string[] entryInfo = entries[0].Split(new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -812,7 +813,7 @@ public class GameManager : MonoBehaviour
                         shotCount = int.Parse(entryInfo[4]);
                     }
                 }
-                print("get succes! " + get.text);
+                print("get succes! " + get.downloadHandler.text);
                 doneHere = true;
                 loadingRingAnimator.SetBool("Loading", false);
             }
@@ -835,8 +836,8 @@ public class GameManager : MonoBehaviour
 
         while (!doneHere)
         {
-            WWW post = new WWW(ScoreManager.webURL + ScoreManager.privateCode + "/add/" + newPlayerInfo);
-            yield return post;
+            var post = new UnityWebRequest(ScoreManager.webURL + ScoreManager.privateCode + "/add/" + newPlayerInfo);            
+            yield return post.SendWebRequest();
 
             if (string.IsNullOrEmpty(post.error))
             {
