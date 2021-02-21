@@ -204,16 +204,18 @@ public class NetworkManagerBS : NetworkManager
     }
     public void IngameDisconnect()                                      // --------------- GAME -----------------
     {
-
-        if (mode == NetworkManagerMode.Host)
+        if (SceneManager.GetActiveScene().name == "Game_PVP")
         {
-            StopHost();
-            Debug.Log("Stopping the host...");
-        }
-        else if (mode == NetworkManagerMode.ClientOnly)
-        {
-            StopClient();
-            Debug.Log("Disconnecting...");
+            if (mode == NetworkManagerMode.Host)
+            {
+                StopHost();
+                Debug.Log("Stopping the host...");
+            }
+            else if (mode == NetworkManagerMode.ClientOnly)
+            {
+                StopClient();
+                Debug.Log("Disconnecting...");
+            }
         }
         SceneManager.LoadScene("Menu");
         Destroy(gameObject);

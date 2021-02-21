@@ -68,8 +68,20 @@ public class GameManager : MonoBehaviour
     public bool ShipThatWasHitIsHorizontal { get; set; } = false;
     public bool ShipThatWasHitIsVertical { get; set; } = false;
 
+    private NetworkManagerBS room;
+    private NetworkManagerBS Room
+    {
+        get
+        {
+            if (room != null)
+            {
+                return room;
+            }
+            return room = NetworkManager.singleton as NetworkManagerBS;
+        }
+    }
 
-    public void GoBackToMainMenu() => SceneManager.LoadScene("Menu");
+    public void GoBackToMainMenu() => Room.IngameDisconnect();
     public void Start() // AI difficulty => ship placement + tactic
     {
         ShipsGrid aiGrid = opponentGrid.GetComponent<ShipsGrid>();
