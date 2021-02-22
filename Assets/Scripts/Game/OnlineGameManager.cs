@@ -5,6 +5,7 @@ using Cinemachine;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.Networking;
 using Mirror;
 using TMPro;
 
@@ -55,6 +56,7 @@ public class OnlineGameManager : NetworkBehaviour
     [SerializeField] private TMP_Text ownNameInfo = null;
     [SerializeField] private TMP_Text opponentNameInfo = null;
     [SerializeField] private TMP_Text whoseTurnInfo = null;
+    [SerializeField] private Animator loadingRingAnimator = null;
 
     [Header("Game")]
     [SerializeField] private GameObject battlefield = null;
@@ -607,10 +609,85 @@ public class OnlineGameManager : NetworkBehaviour
         }
     }
 
+    [ClientRpc]
+    public void RpcSetLoadingRingActive(bool value) => loadingRingAnimator.SetBool("Loading", value);
+
     private IEnumerator AnnounceWinnerAfterSeconds(Side winner, float count)
     {
         RpcDisableBattlefield();
+        RpcSetLoadingRingActive(true);
+
         yield return new WaitForSeconds(count);
+
+        /////////////////////////////////////////////////////////////        
+
+        foreach (var gamePlayer in Room.GamePlayers)
+        {
+            int winCount = 0;
+            int matchCount = 0;
+            int hitCount = 0;
+            int shotCount = 0;
+
+            bool doneHere = false;
+
+            while (!doneHere)
+            {
+                var get = new UnityWebRequest(ScoreManager.webURL + ScoreManager.publicCode + "/pipe-get/" + gamePlayer.displayName);
+                get.downloadHandler = new DownloadHandlerBuffer();
+                yield return get.SendWebRequest();
+
+                if (string.IsNullOrEmpty(get.error))
+                {
+                    string[] entries = get.downloadHandler.text.Split(new char[] { '\n' }, System.StringSplitOptions.RemoveEmptyEntries);
+                    if (entries.Length != 0)
+                    {
+                        string[] entryInfo = entries[0].Split(new char[] { '|' }, System.StringSplitOptions.RemoveEmptyEntries);
+                        if (entryInfo.Length != 0)
+                        {
+                            winCount = int.Parse(entryInfo[1]);
+                            matchCount = int.Parse(entryInfo[2]);
+                            hitCount = int.Parse(entryInfo[3]);
+                            shotCount = int.Parse(entryInfo[4]);
+                        }
+                    }
+                    print("get succes! " + get.downloadHandler.text);
+                    doneHere = true;                    
+                }
+                else
+                {
+                    print("get error: " + get.error);
+                    yield return new WaitForSeconds(1f);
+                }
+            }
+
+            winCount = winner == gamePlayer.mySide ? winCount + 1 : winCount;
+            matchCount++;
+
+            hitCount = gamePlayer.mySide == Side.Left ? hitCount + hitCount_01 : hitCount + hitCount_02;
+            shotCount = gamePlayer.mySide == Side.Left ? shotCount + shotCount_01 : shotCount + shotCount_02;
+
+            string newPlayerInfo = string.Format("{0}/{1}/{2}/{3}|{4}", gamePlayer.displayName, winCount, matchCount, hitCount, shotCount);
+
+            doneHere = false;
+
+            while (!doneHere)
+            {
+                var post = new UnityWebRequest(ScoreManager.webURL + ScoreManager.privateCode + "/add/" + newPlayerInfo);
+                yield return post.SendWebRequest();
+
+                if (string.IsNullOrEmpty(post.error))
+                {
+                    print("post succes! " + newPlayerInfo);
+                    doneHere = true;
+                }
+                else
+                {
+                    print("post error: " + post.error);
+                    yield return new WaitForSeconds(1f);
+                }
+            }
+        }
+        RpcSetLoadingRingActive(false);
         RpcAnnounceWinner(winner);
     }
 }
