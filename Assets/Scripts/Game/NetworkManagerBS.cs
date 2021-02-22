@@ -185,6 +185,8 @@ public class NetworkManagerBS : NetworkManager
             }
         }
 
+        FindObjectOfType<AudioManager>().Play("SELECT");
+
         base.ServerChangeScene(newSceneName);
     }
 

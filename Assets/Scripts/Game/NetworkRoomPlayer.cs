@@ -119,6 +119,8 @@ public class NetworkRoomPlayer : NetworkBehaviour
         Room.NotifyPlayersOfReadyState();
     }
 
+    public void SwitchBeep() => FindObjectOfType<AudioManager>().Play("SWITCH");
+
     [Command]
     public void CmdStartGame()
     {
