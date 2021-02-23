@@ -109,7 +109,7 @@ public class NetworkRoomPlayer : NetworkBehaviour
     [Command]
     private void CmdSetDisplayName(string displayName)
     {
-        DisplayName = displayName;
+        DisplayName = displayName; 
     }
 
     [Command]

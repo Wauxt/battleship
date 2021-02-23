@@ -262,7 +262,7 @@ public class GameManager : MonoBehaviour
             barPanel.transform.Find("Save").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "<color #505050>Сохранить</color>";
             barPanel.transform.Find("Load").gameObject.GetComponent<Button>().interactable = false;
             barPanel.transform.Find("Load").transform.Find("Text").gameObject.GetComponent<TMP_Text>().text = "<color #505050>Загрузить</color>";
-            StartCoroutine(AITurnCoroutine(1f));            
+            StartCoroutine(AITurnCoroutine(1.45f));            
         }
         else if (WhoseTurn == Side.Left)
         {

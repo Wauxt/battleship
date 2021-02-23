@@ -132,9 +132,11 @@ public class Ship : MonoBehaviour
             if (Input.GetMouseButtonDown(1))
             {
                 transform.rotation *= Quaternion.Euler(0, 90, 0);
+                FindObjectOfType<AudioManager>().Play("TURNSHIP");
             }
             if (Input.GetKeyDown(KeyCode.Delete))
             {
+                FindObjectOfType<AudioManager>().Play("DELETESHIP");
                 DeleteShip();                
             }
         }        
@@ -144,6 +146,7 @@ public class Ship : MonoBehaviour
     {
         if (!isDragging)
         {
+            
             BeginDrag();
             transform.localScale = new Vector3(1f, 0.4f, 1f);            
         }
@@ -153,6 +156,7 @@ public class Ship : MonoBehaviour
     {
         if (isDragging)
         {
+            FindObjectOfType<AudioManager>().Play("PLACESHIP");
             EndDrag();            
         }
     }
@@ -217,7 +221,7 @@ public class Ship : MonoBehaviour
         shipsGrid.SwitchReadyState();
     }
     public void DeleteAllShips()
-    {
+    {        
         for (int i = 0; i < 10; i++)
         {
             shipsGrid.gameObject.transform.GetChild(i).GetComponent<Ship>().DeleteShip();
