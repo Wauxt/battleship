@@ -30,7 +30,8 @@ public class MainMenu : MonoBehaviour
             return room = NetworkManager.singleton as NetworkManagerBS;
         }
     }
-
+    void Awake() => Application.targetFrameRate = 144;
+    
     public void OfflineStartButton()
     {
         GameObject.Find("Main Camera").GetComponent<Animator>().SetTrigger("hasToMoveUp");
