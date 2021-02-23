@@ -9,6 +9,7 @@ public class WindowScript : MonoBehaviour, IDragHandler
     private Vector2 _deltaValue = Vector2.zero;
     private bool _maximized;
     //public Vector2Int borderSize;
+    [SerializeField] private GameObject soundPanel = null;
     
 
     public void Start()
@@ -53,6 +54,14 @@ public class WindowScript : MonoBehaviour, IDragHandler
         if (data.dragging)
         {
             BorderlessWindow.MoveWindowPos(_deltaValue, Screen.width, Screen.height);
+        }
+    }
+
+    public void OnSoundBtnClick()
+    {
+        if (soundPanel != null)
+        {
+            soundPanel.SetActive(!soundPanel.activeSelf);
         }
     }
 }

@@ -137,6 +137,7 @@ GameObject:
   - component: {fileID: 4498729100513025175}
   - component: {fileID: 4646027930562346478}
   - component: {fileID: 8646398655531352963}
+  - component: {fileID: 4995627097596138659}
   m_Layer: 0
   m_Name: Camera_Player
   m_TagString: Untagged
@@ -224,3 +225,11 @@ MonoBehaviour:
   m_Damping: 0
   m_DampingWhenOccluded: 0
   m_OptimalTargetDistance: 0
+--- !u!81 &4995627097596138659
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6309034117264072654}
+  m_Enabled: 1
